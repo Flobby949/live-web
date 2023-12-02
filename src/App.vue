@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
+import { testSuccess } from '@/api/test.ts'
 const title = 'Vite + Vue!'
+
+testSuccess().then((res) => {
+  console.log(res)
+})
 </script>
 
 <template>

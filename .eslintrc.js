@@ -21,7 +21,9 @@ module.exports = {
     'space-before-function-paren': 'off',
     'vue/multi-word-component-names': 'off',
     'no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'eslint-disable-next-line': 'off',
-    'no-undef': 'off'
+    'no-undef': 'off',
+    '@typescript-eslint/no-explicit-any': 'off'
   }
 }
