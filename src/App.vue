@@ -7,24 +7,30 @@ testSuccess().then((res) => {
 </script>
 
 <template>
-  <div>
-    <router-link to="/">home</router-link>
-    <router-link to="/about">about</router-link>
-  </div>
   <router-view />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<style>
+a.router-link-active,
+a.router-link-exact-active,
+a:link {
+  text-decoration: none;
+  color: inherit; /* 或者你想要的任何颜色 */
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+    'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+}
+
+ul {
+  list-style: none;
 }
 </style>
