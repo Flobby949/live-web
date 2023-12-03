@@ -96,6 +96,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { UserLoginDto, userLogin, UserLoginResult } from '@/api/user'
+import { sendVerifyCode } from '@/api/system'
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 // 导航栏路由
 const navRouter = [
   {
@@ -145,24 +149,43 @@ const lastTime = ref<number>(60)
 const interval = ref(0)
 const btnDisabled = ref(false)
 const sendCode = () => {
+  if (loginForm.value.phone === '') {
+    toast.error('手机号不能为空', {
+      timeout: 2000
+    })
+    return
+  }
   btnDisabled.value = true
   // 发送验证码
   loginBtnInfo.value = '发送中(' + lastTime.value + ')'
-  // 倒计时
-  interval.value = setInterval(() => {
-    lastTime.value--
-    loginBtnInfo.value = `${lastTime.value}秒后重新获取`
-    if (lastTime.value <= 0) {
-      clearInterval(interval.value)
+  sendVerifyCode(loginForm.value.phone).then((res) => {
+    console.log(res)
+    if (res.success) {
+      // 倒计时
+      interval.value = setInterval(() => {
+        lastTime.value--
+        loginBtnInfo.value = `${lastTime.value}秒后重新获取`
+        if (lastTime.value <= 0) {
+          clearInterval(interval.value)
+          loginBtnInfo.value = '获取验证码'
+          lastTime.value = 60
+          btnDisabled.value = false
+        }
+      }, 1000)
+    } else {
+      // 发生失败提示
       loginBtnInfo.value = '获取验证码'
-      lastTime.value = 60
-      btnDisabled.value = false
+      btnDisabled.value = true
+
+      toast.error(res.message, {
+        timeout: 2000
+      })
     }
-  }, 1000)
+  })
 }
 
 // 表单校验
-const loginForm = ref({
+const loginForm = ref<UserLoginDto>({
   phone: '',
   code: ''
 })
@@ -179,7 +202,22 @@ const submit = () => {
     return
   }
   // 提交表单
-  console.log(loginForm)
+  userLogin(loginForm.value).then((res) => {
+    console.log(res)
+    if (res.success) {
+      // 登录成功
+      toast.success('登录成功', {
+        timeout: 2000
+      })
+      loginDialogVisible.value = false
+      isLogin.value = true
+    } else {
+      // 登录失败
+      toast.error(res.message, {
+        timeout: 2000
+      })
+    }
+  })
 }
 </script>
 

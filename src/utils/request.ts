@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 
 export interface ResponseData<T> {
-  code: number
+  success: boolean
   data: T
   message: string
 }
