@@ -13,22 +13,12 @@
   </v-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import navbar from '@/layout/navbar/index.vue'
 import myFooter from '@/layout/footer/index.vue'
 </script>
 
 <style scoped>
-.fixed-header {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 9;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-}
-
 .main-content {
   box-shadow:
     0 15px 35px rgba(114, 114, 137, 0.1),
@@ -37,7 +27,7 @@ import myFooter from '@/layout/footer/index.vue'
   border: 1px solid #ddd;
   border-radius: 4px;
   z-index: 900;
-  margin: 80px 20px;
-  height: 86vh;
+  margin: 80px 20px 0px;
+  height: 80vh;
 }
 </style>

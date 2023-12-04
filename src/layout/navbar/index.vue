@@ -42,64 +42,19 @@
       </v-col>
     </v-row>
     <!-- 验证码登录对话框 -->
-    <v-dialog v-model="loginDialogVisible" max-width="500px" persistent>
-      <v-card>
-        <v-card-title class="headline font-weight-bold">登录</v-card-title>
-        <v-card-text>
-          <v-form ref="formRef">
-            <v-text-field
-              label="手机号"
-              class="mb-4"
-              v-model="loginForm.phone"
-              :rules="rules.phone"
-              outlined
-              placeholder="请输入手机号"
-              :style="{ 'font-size': '14px', color: '#666', 'border-color': '#ccc' }"
-            />
-            <v-row no-gutters>
-              <v-col cols="8">
-                <v-text-field
-                  label="验证码"
-                  v-model="loginForm.code"
-                  :rules="rules.code"
-                  outlined
-                  placeholder="请输入验证码"
-                  :style="{ 'font-size': '14px', color: '#666', 'border-color': '#ccc' }"
-                />
-              </v-col>
-              <v-col cols="4" class="pl-2">
-                <!-- 获取验证码 -->
-                <v-btn
-                  height="55"
-                  min-width="140"
-                  variant="tonal"
-                  color="white"
-                  @click="sendCode"
-                  style="background-color: #75a99c"
-                  :disabled="btnDisabled"
-                >
-                  {{ loginBtnInfo }}
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey darken-1" text @click="loginDialogVisible = false">取消</v-btn>
-          <v-btn color="primary" text @click="submit">登录</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <loginForm v-model:modelValue="loginDialogVisible" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { UserLoginDto, userLogin, UserLoginResult } from '@/api/user'
-import { sendVerifyCode } from '@/api/system'
+import loginForm from '../components/loginForm.vue'
+import { userStore } from '@/store'
+import { storeToRefs } from 'pinia'
+import { userLogout } from '@/api/user'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
+const store = userStore()
 // 导航栏路由
 const navRouter = [
   {
@@ -128,96 +83,29 @@ const navRouter = [
     icon: 'mdi-account'
   }
 ]
-
+const { isLogin } = storeToRefs(store)
 // 登录 / 退出登录事件判断
-const isLogin = ref(false)
+// const isLogin = ref(false)
 const loginDialogVisible = ref(false)
 const doItem = () => {
-  console.log(isLogin.value)
   // 如果已经登录，点击退出登录
   if (isLogin.value) {
     // 退出操作
+    userLogout()
+      .then((res) => {
+        if (res.success) {
+          toast.success('退出成功', {
+            timeout: 2000
+          })
+          store.logout()
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   } else {
     loginDialogVisible.value = true
   }
-}
-
-/// 登录业务
-// 发送验证码
-const loginBtnInfo = ref<string>('获取验证码')
-const lastTime = ref<number>(60)
-const interval = ref(0)
-const btnDisabled = ref(false)
-const sendCode = () => {
-  if (loginForm.value.phone === '') {
-    toast.error('手机号不能为空', {
-      timeout: 2000
-    })
-    return
-  }
-  btnDisabled.value = true
-  // 发送验证码
-  loginBtnInfo.value = '发送中(' + lastTime.value + ')'
-  sendVerifyCode(loginForm.value.phone).then((res) => {
-    console.log(res)
-    if (res.success) {
-      // 倒计时
-      interval.value = setInterval(() => {
-        lastTime.value--
-        loginBtnInfo.value = `${lastTime.value}秒后重新获取`
-        if (lastTime.value <= 0) {
-          clearInterval(interval.value)
-          loginBtnInfo.value = '获取验证码'
-          lastTime.value = 60
-          btnDisabled.value = false
-        }
-      }, 1000)
-    } else {
-      // 发生失败提示
-      loginBtnInfo.value = '获取验证码'
-      btnDisabled.value = true
-
-      toast.error(res.message, {
-        timeout: 2000
-      })
-    }
-  })
-}
-
-// 表单校验
-const loginForm = ref<UserLoginDto>({
-  phone: '',
-  code: ''
-})
-
-const rules = {
-  phone: [(v) => !!v || '手机号是必填项', (v) => /^1[3-9]\d{9}$/.test(v) || '请输入有效的手机号'],
-  code: [(v) => !!v || '验证码是必填项', (v) => v.length === 6 || '验证码长度必须是6位']
-}
-
-const formRef = ref()
-const submit = () => {
-  const valid = formRef.value.validate()
-  if (!valid) {
-    return
-  }
-  // 提交表单
-  userLogin(loginForm.value).then((res) => {
-    console.log(res)
-    if (res.success) {
-      // 登录成功
-      toast.success('登录成功', {
-        timeout: 2000
-      })
-      loginDialogVisible.value = false
-      isLogin.value = true
-    } else {
-      // 登录失败
-      toast.error(res.message, {
-        timeout: 2000
-      })
-    }
-  })
 }
 </script>
 
@@ -250,7 +138,7 @@ const submit = () => {
 
 .top-search-input {
   height: 40px;
-  width: 400px;
+  width: 300px;
   background-color: rgba(215, 215, 215, 0.642);
   padding: 5px 20px;
   margin-left: 80px;
@@ -258,26 +146,5 @@ const submit = () => {
   position: relative;
   border: 0px;
   outline: none;
-}
-.v-dialog .v-card {
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.v-dialog .headline {
-  color: #007bff; /* 更鲜艳的蓝色 */
-}
-
-.v-dialog .v-text-field .v-label {
-  color: #4a4a4a; /* 深灰色，增加对比 */
-}
-
-.v-dialog .v-btn {
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.v-dialog .v-btn:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 </style>

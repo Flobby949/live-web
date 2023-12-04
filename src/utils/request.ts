@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import { userStore } from '@/store'
 
 export interface ResponseData<T> {
   success: boolean
@@ -9,7 +10,7 @@ export interface ResponseData<T> {
 // 创建 axios 实例
 const request: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_API as string, // api base_url
-  timeout: 10000, // 请求超时时间
+  timeout: 5000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json;charset=UTF-8'
   }
@@ -19,7 +20,14 @@ const request: AxiosInstance = axios.create({
 request.interceptors.request.use(
   (config) => {
     // 在这里可以添加认证信息头部等
-    // config.headers.Authorization = 'Your Auth Token';
+    const store = userStore()
+    if (store?.token) {
+      config.headers.Authorization = store.token
+    }
+    // 追加时间戳，防止 GET 请求缓存
+    if (config.method?.toUpperCase() === 'GET') {
+      config.params = { ...config.params, t: new Date().getTime() }
+    }
     console.log(config)
     return config
   },
@@ -32,6 +40,7 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
+    console.log(response.data)
     return response
   },
   (error) => {

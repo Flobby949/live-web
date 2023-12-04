@@ -1,10 +1,4 @@
-<script setup lang="ts">
-import { testSuccess } from '@/api/test.ts'
-
-testSuccess().then((res) => {
-  console.log(res)
-})
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <router-view />

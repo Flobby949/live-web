@@ -15,5 +15,9 @@ export interface UserLoginResult {
 }
 
 export const userLogin = (dto: UserLoginDto): Promise<ResponseData<UserLoginResult>> => {
-  return request.post<ResponseData<any>>('/live-api/user/login', dto).then((response) => response.data)
+  return request.post<ResponseData<UserLoginResult>>('/live-api/user/login', dto).then((response) => response.data)
+}
+
+export const userLogout = (): Promise<ResponseData<any>> => {
+  return request.post<ResponseData<any>>('/live-api/user/logout').then((response) => response.data)
 }
