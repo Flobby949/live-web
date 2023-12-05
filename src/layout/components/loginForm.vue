@@ -111,7 +111,6 @@ const sendCode = () => {
       // 发生失败提示
       loginBtnInfo.value = '获取验证码'
       btnDisabled.value = false
-
       toast.error(res.message, {
         timeout: 2000
       })
@@ -127,7 +126,7 @@ const loginForm = ref<UserLoginDto>({
 
 const rules = {
   phone: [(v) => !!v || '手机号是必填项', (v) => /^1[3-9]\d{9}$/.test(v) || '请输入有效的手机号'],
-  code: [(v) => !!v || '验证码是必填项', (v) => v.length === 6 || '验证码长度必须是6位']
+  code: [(v) => !!v || '验证码是必填项', (v) => v.length === 4 || '验证码长度必须是4位']
 }
 
 const formRef = ref()
@@ -147,8 +146,9 @@ const submit = async () => {
       toast.success('登录成功', {
         timeout: 2000
       })
-      clearInterval(interval.value)
+      lastTime.value = -1
       loginDialogVisible.value = false
+      loginForm.value.code = ''
       // 保存token
       store.setToken(res.data.token)
     } else {

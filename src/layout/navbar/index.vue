@@ -53,6 +53,7 @@ import { userStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { userLogout } from '@/api/user'
 import { useToast } from 'vue-toastification'
+import router from '@/router'
 const toast = useToast()
 const store = userStore()
 // 导航栏路由
@@ -97,6 +98,7 @@ const doItem = () => {
           toast.success('退出成功', {
             timeout: 2000
           })
+          router.push('/')
           store.logout()
         }
       })

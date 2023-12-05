@@ -11,13 +11,18 @@ export const userStore = defineStore('userStore', {
     },
     // 登录 token
     token: cache.getToken(),
-    isLogin: false
+    isLogin: !!cache.getToken()
   }),
   actions: {
     setToken(val: string) {
       this.token = val
       this.isLogin = true
       cache.setToken(val)
+    },
+    removeToken() {
+      this.token = ''
+      this.isLogin = false
+      cache.removeToken()
     },
     logout() {
       this.token = ''

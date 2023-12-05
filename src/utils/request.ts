@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import router from '@/router'
 import { userStore } from '@/store'
 
 export interface ResponseData<T> {
@@ -44,8 +45,31 @@ request.interceptors.response.use(
     return response
   },
   (error) => {
+    console.log(error)
+    // 构造一个error对象
+    const err = {
+      data: {
+        success: false,
+        data: null,
+        message: ''
+      }
+    }
     // 处理响应错误
-    return Promise.reject(error)
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          // 返回 401 清除 token 信息并跳转到首页
+          userStore().removeToken()
+          router.push('/')
+          // 弹框提示重新登录
+          err.data.message = '登录已过期，请重新登录'
+          break
+        default:
+          err.data.message = '系统异常，请稍后再试'
+          break
+      }
+    }
+    return err
   }
 )
 
