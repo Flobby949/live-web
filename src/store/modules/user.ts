@@ -1,14 +1,11 @@
 import { defineStore } from 'pinia'
 import cache from '@/utils/cache'
+import { UserInfo } from '@/api/user'
 
 export const userStore = defineStore('userStore', {
   state: () => ({
     // 用户信息
-    user: {
-      id: '',
-      nickname: '',
-      avatar: ''
-    },
+    user: cache.getUserInfo(),
     // 登录 token
     token: cache.getToken(),
     isLogin: !!cache.getToken()
@@ -24,10 +21,16 @@ export const userStore = defineStore('userStore', {
       this.isLogin = false
       cache.removeToken()
     },
+    saveUserInfo(info: UserInfo) {
+      this.user = info
+      cache.setUserInfo(JSON.stringify(info))
+    },
     logout() {
       this.token = ''
       this.isLogin = false
+      this.user = {} as UserInfo
       cache.removeToken()
+      cache.removeUserInfo()
     }
   }
 })

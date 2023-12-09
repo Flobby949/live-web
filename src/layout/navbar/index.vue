@@ -27,12 +27,19 @@
       <v-col cols="12" md="1">
         <v-menu right top>
           <template v-slot:activator="{ props }">
-            <v-btn icon="mdi-dots-vertical" v-bind="props"></v-btn>
+            <v-btn v-bind="props">
+              <template v-slot:prepend>
+                <v-avatar v-if="isLogin" size="x-small">
+                  <v-img :src="user.avatar" alt="John"></v-img>
+                </v-avatar>
+              </template>
+              {{ isLogin ? user.nickName : '去登录' }}
+            </v-btn>
           </template>
 
           <v-list color="accent">
             <v-list-item link>
-              <v-list-item-title>系统设置</v-list-item-title>
+              <v-list-item-title v-if="isLogin">个人中心</v-list-item-title>
             </v-list-item>
             <v-list-item link>
               <v-list-item-title @click="doItem">{{ isLogin ? '退出登录' : '去登陆' }}</v-list-item-title>
@@ -84,7 +91,7 @@ const navRouter = [
     icon: 'mdi-account'
   }
 ]
-const { isLogin } = storeToRefs(store)
+const { isLogin, user } = storeToRefs(store)
 // 登录 / 退出登录事件判断
 // const isLogin = ref(false)
 const loginDialogVisible = ref(false)

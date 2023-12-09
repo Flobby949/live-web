@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch } from 'vue'
-import { UserLoginDto, userLogin, UserLoginResult } from '@/api/user'
+import { UserLoginDto, userLogin, UserLoginResult, UserInfo, getUserInfo } from '@/api/user'
 import { sendVerifyCode } from '@/api/system'
 import { useToast } from 'vue-toastification'
 import { ResponseData } from '@/utils/request'
@@ -142,15 +142,24 @@ const submit = async () => {
   userLogin(loginForm.value).then((res) => {
     loginLoading.value = false
     if (res.success) {
-      // 登录成功
-      toast.success('登录成功', {
-        timeout: 2000
-      })
-      lastTime.value = -1
-      loginDialogVisible.value = false
-      loginForm.value.code = ''
       // 保存token
       store.setToken(res.data.token)
+      // 获取信息
+      getUserInfo().then((resp: ResponseData<UserInfo>) => {
+        if (resp.success) {
+          store.saveUserInfo(resp.data)
+          toast.success('登录成功', {
+            timeout: 2000
+          })
+          lastTime.value = -1
+          loginDialogVisible.value = false
+          loginForm.value.code = ''
+        } else {
+          toast.error(resp.message, {
+            timeout: 2000
+          })
+        }
+      })
     } else {
       // 登录失败
       toast.error(res.message, {
