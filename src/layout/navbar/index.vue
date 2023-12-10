@@ -25,7 +25,7 @@
         </span>
       </v-col>
       <v-col md="1">
-        <v-btn v-if="user.isVip" color="white" elevation="0"> 开播 </v-btn>
+        <v-btn v-if="user.isVip" color="white" elevation="0" @click="goLive"> 开播 </v-btn>
       </v-col>
       <v-col cols="12" md="1">
         <v-menu right top>
@@ -118,6 +118,11 @@ const doItem = () => {
   } else {
     loginDialogVisible.value = true
   }
+}
+
+// 开播
+const goLive = () => {
+  router.push('/liveRoom')
 }
 </script>
 

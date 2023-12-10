@@ -1,13 +1,11 @@
 <template>
-  <v-layout>
+  <v-layout style="display: flex; height: 100%">
     <!-- 顶部的 navbar -->
     <navbar />
     <!-- 内容区 -->
-    <v-main class="main-content">
-      <v-container>
-        <router-view />
-      </v-container>
-    </v-main>
+    <div class="main-content">
+      <router-view />
+    </div>
     <!-- 底部的 footer -->
     <my-footer />
   </v-layout>
@@ -27,7 +25,9 @@ import myFooter from '@/layout/footer/index.vue'
   border: 1px solid #ddd;
   border-radius: 4px;
   z-index: 900;
-  margin: 80px 20px 0px;
-  height: 80vh;
+  margin: 80px 20px 60px;
+  padding: 20px;
+  display: flex;
+  flex: 1;
 }
 </style>

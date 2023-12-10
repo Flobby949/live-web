@@ -25,6 +25,14 @@ const routes = [
           loginRequire: true
         },
         component: () => import('@/views/about.vue')
+      },
+      {
+        path: '/liveRoom',
+        name: 'liveRoom',
+        meta: {
+          loginRequire: true
+        },
+        component: () => import('@/views/liveRoom.vue')
       }
     ]
   }
