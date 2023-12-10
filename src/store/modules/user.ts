@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import cache from '@/utils/cache'
-import { UserInfo } from '@/api/user'
+import { HomePageUserVO } from '@/api/home'
 
 export const userStore = defineStore('userStore', {
   state: () => ({
@@ -21,14 +21,14 @@ export const userStore = defineStore('userStore', {
       this.isLogin = false
       cache.removeToken()
     },
-    saveUserInfo(info: UserInfo) {
+    saveUserInfo(info: HomePageUserVO) {
       this.user = info
       cache.setUserInfo(JSON.stringify(info))
     },
     logout() {
       this.token = ''
       this.isLogin = false
-      this.user = {} as UserInfo
+      this.user = {} as HomePageUserVO
       cache.removeToken()
       cache.removeUserInfo()
     }

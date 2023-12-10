@@ -7,7 +7,7 @@
           <h1>旗鱼直播</h1>
         </router-link>
       </v-col>
-      <v-col cols="12" md="8">
+      <v-col md="7">
         <v-btn
           v-for="(link, index) in navRouter"
           :key="index"
@@ -24,6 +24,9 @@
           <input type="search" class="top-search-input" placeholder="输入你想查找的东西" />
         </span>
       </v-col>
+      <v-col md="1">
+        <v-btn v-if="user.isVip" color="white" elevation="0"> 开播 </v-btn>
+      </v-col>
       <v-col cols="12" md="1">
         <v-menu right top>
           <template v-slot:activator="{ props }">
@@ -38,8 +41,8 @@
           </template>
 
           <v-list color="accent">
-            <v-list-item link>
-              <v-list-item-title v-if="isLogin">个人中心</v-list-item-title>
+            <v-list-item v-if="isLogin" link>
+              <v-list-item-title>个人中心</v-list-item-title>
             </v-list-item>
             <v-list-item link>
               <v-list-item-title @click="doItem">{{ isLogin ? '退出登录' : '去登陆' }}</v-list-item-title>
@@ -147,7 +150,7 @@ const doItem = () => {
 
 .top-search-input {
   height: 40px;
-  width: 300px;
+  width: 200px;
   background-color: rgba(215, 215, 215, 0.642);
   padding: 5px 20px;
   margin-left: 80px;

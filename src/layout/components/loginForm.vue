@@ -52,7 +52,8 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch } from 'vue'
-import { UserLoginDto, userLogin, UserLoginResult, UserInfo, getUserInfo } from '@/api/user'
+import { UserLoginDto, userLogin, UserLoginResult } from '@/api/user'
+import { getHomePageUserInfo } from '@/api/home'
 import { sendVerifyCode } from '@/api/system'
 import { useToast } from 'vue-toastification'
 import { ResponseData } from '@/utils/request'
@@ -139,34 +140,35 @@ const submit = async () => {
   }
   loginLoading.value = true
   // 提交表单
-  userLogin(loginForm.value).then((res) => {
+  const loginRes = await userLogin(loginForm.value)
+  if (!loginRes.success) {
+    // 登录失败
+    toast.error(loginRes.message, {
+      timeout: 2000
+    })
     loginLoading.value = false
-    if (res.success) {
-      // 保存token
-      store.setToken(res.data.token)
-      // 获取信息
-      getUserInfo().then((resp: ResponseData<UserInfo>) => {
-        if (resp.success) {
-          store.saveUserInfo(resp.data)
-          toast.success('登录成功', {
-            timeout: 2000
-          })
-          lastTime.value = -1
-          loginDialogVisible.value = false
-          loginForm.value.code = ''
-        } else {
-          toast.error(resp.message, {
-            timeout: 2000
-          })
-        }
-      })
-    } else {
-      // 登录失败
-      toast.error(res.message, {
-        timeout: 2000
-      })
-    }
-  })
+    return
+  }
+  // 保存token
+  store.setToken(loginRes.data.token)
+  // 获取信息
+  const userInfoRes = await getHomePageUserInfo()
+  if (userInfoRes.success) {
+    store.saveUserInfo(userInfoRes.data)
+    toast.success('登录成功', {
+      timeout: 2000
+    })
+    lastTime.value = -1
+    loginDialogVisible.value = false
+    loginForm.value.code = ''
+  } else {
+    // 移除token
+    store.removeToken()
+    toast.error(userInfoRes.message, {
+      timeout: 2000
+    })
+  }
+  loginLoading.value = false
 }
 </script>
 

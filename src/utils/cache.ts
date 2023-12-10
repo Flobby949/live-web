@@ -1,4 +1,4 @@
-import { UserInfo } from '@/api/user'
+import { HomePageUserVO } from '@/api/home'
 class Cache {
   TokenKey = 'TOKEN'
   UserInfo = 'USER_INFO'
@@ -15,7 +15,7 @@ class Cache {
     localStorage.removeItem(this.TokenKey)
   }
 
-  getUserInfo = (): UserInfo => {
+  getUserInfo = (): HomePageUserVO => {
     return JSON.parse(localStorage.getItem(this.UserInfo) || '{}')
   }
 
