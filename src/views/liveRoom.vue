@@ -11,7 +11,7 @@
               </div>
               <img src="@/assets/img/anchor.jpeg" class="anchor_img" alt="" />
             </div>
-            <v-btn style="background-color: #966bff; color: #fff" @click="closeLivingNow">关闭直播</v-btn>
+            <v-btn style="background-color: #966bff; color: #fff" @click="showCloseDialog">关闭直播</v-btn>
           </div>
           <video width="100%" style="background-color: rgb(18, 9, 37); flex: 1">
             <!-- <source src="test.mp4"> -->
@@ -73,6 +73,26 @@
       </v-col>
     </v-row>
   </v-container>
+
+  <v-dialog v-model="closeDialogVisible" max-width="500px" persistent>
+    <v-card>
+      <v-toolbar dark prominent>
+        <v-toolbar-title>关闭直播</v-toolbar-title>
+
+        <v-spacer></v-spacer>
+
+        <v-btn icon @click="closeDialogVisible = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+      <v-card-text> 是否确认关闭直播间？ </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="error" text @click="closeDialogVisible = false">取消</v-btn>
+        <v-btn color="primary" text @click="closeLivingNow">确认</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -98,6 +118,11 @@ onMounted(() => {
     }
   })
 })
+
+const closeDialogVisible = ref(false)
+const showCloseDialog = () => {
+  closeDialogVisible.value = true
+}
 
 const closeLivingNow = () => {
   closeLiving(roomId.value).then((res) => {
