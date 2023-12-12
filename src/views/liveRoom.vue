@@ -11,7 +11,7 @@
               </div>
               <img src="@/assets/img/anchor.jpeg" class="anchor_img" alt="" />
             </div>
-            <v-btn style="background-color: #966bff; color: #fff">关闭直播</v-btn>
+            <v-btn style="background-color: #966bff; color: #fff" @click="closeLivingNow">关闭直播</v-btn>
           </div>
           <video width="100%" style="background-color: rgb(18, 9, 37); flex: 1">
             <!-- <source src="test.mp4"> -->
@@ -76,7 +76,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { livingStore } from '@/store'
+import { storeToRefs } from 'pinia'
+import { closeLiving, livingInfo } from '@/api/living'
+import { useToast } from 'vue-toastification'
+import router from '@/router'
+const toast = useToast()
+
+const liveStore = livingStore()
+const { roomId } = storeToRefs(liveStore)
+
+onMounted(() => {
+  livingInfo(roomId.value).then((res) => {
+    if (res.success) {
+      console.log('获取直播间信息成功')
+      console.log(res.data)
+    } else {
+      console.log('获取直播间信息失败')
+      toast.error(res.message)
+    }
+  })
+})
+
+const closeLivingNow = () => {
+  closeLiving(roomId.value).then((res) => {
+    if (res.success) {
+      toast.success('关闭直播间成功')
+      router.push('/home')
+    } else {
+      console.log('关闭直播间失败')
+      toast.error(res.message)
+    }
+  })
+}
 
 const accountInfo = ref({ currentBalance: 0 })
 const giftList = ref([

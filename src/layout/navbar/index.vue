@@ -59,13 +59,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import loginForm from '../components/loginForm.vue'
-import { userStore } from '@/store'
+import { userStore, livingStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { userLogout } from '@/api/user'
+import { startLiving } from '@/api/living'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
 const toast = useToast()
 const store = userStore()
+const liveStore = livingStore()
 // 导航栏路由
 const navRouter = [
   {
@@ -121,8 +123,19 @@ const doItem = () => {
 }
 
 // 开播
-const goLive = () => {
-  router.push('/liveRoom')
+const goLive = async () => {
+  const res = await startLiving(1)
+  if (res.success) {
+    toast.success('开播成功', {
+      timeout: 2000
+    })
+    liveStore.setRoomId(res.data)
+    router.push('/liveRoom')
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
 }
 </script>
 
