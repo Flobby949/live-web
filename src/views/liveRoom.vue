@@ -97,17 +97,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { livingStore } from '@/store'
-import { storeToRefs } from 'pinia'
 import { closeLiving, livingInfo } from '@/api/living'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
 const toast = useToast()
 
-const liveStore = livingStore()
-const { roomId } = storeToRefs(liveStore)
+const roomId = ref(-1)
+
+// 从路由获取直播间id
+const route = router.currentRoute.value
+const { query } = route
 
 onMounted(() => {
+  console.log(route)
+  roomId.value = Number(query.roomId)
+  if (roomId.value === -1) {
+    console.log('获取直播间id失败')
+    return
+  }
   livingInfo(roomId.value).then((res) => {
     if (res.success) {
       console.log('获取直播间信息成功')
@@ -115,6 +122,7 @@ onMounted(() => {
     } else {
       console.log('获取直播间信息失败')
       toast.error(res.message)
+      router.push('/home')
     }
   })
 })

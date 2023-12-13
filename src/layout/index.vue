@@ -21,12 +21,11 @@ import navbar from '@/layout/navbar/index.vue'
   /**  box-shadow:
     0 15px 35px rgba(114, 114, 137, 0.1),
     0 5px 15px rgb(179, 179, 179) !important;
-  background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;**/
+  background-color: #fafafa;
   z-index: 900;
-  margin: 80px 20px 60px;
-  padding: 20px;
+  padding: 100px 30px 60px;
   display: flex;
   flex: 1;
   box-sizing: border-box;

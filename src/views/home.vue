@@ -1,9 +1,9 @@
 <template>
   <div class="container" ref="scrollContainer">
     <div class="content">
-      <div class="card" v-for="room in liveRoomList" :key="room.id">
-        <live-room-card :room="room"></live-room-card>
-      </div>
+      <v-col cols="12" md="3" class="card" v-for="room in liveRoomList" :key="room.id">
+        <live-room-card :room="room" @click="goToLivingRoom(room.id!)"></live-room-card>
+      </v-col>
     </div>
     <!-- 加载动画 -->
     <div class="loading-bar">
@@ -26,10 +26,11 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import liveRoomCard from '@/components/liveRoomCard.vue'
 import { livingListByPage, liveListPageDTO, LivingRoomInfoVO } from '@/api/living'
-
+import router from '@/router'
 const queryParams = ref<liveListPageDTO>({
   page: 1,
-  pageSize: 12
+  pageSize: 12,
+  type: 0
 })
 const hasNextPage = ref(false)
 const liveRoomList = ref<Array<LivingRoomInfoVO>>([])
@@ -51,6 +52,13 @@ const queryPage = async () => {
   isLoading.value = false
 }
 
+// 跳转到直播间
+const goToLivingRoom = (id: number) => {
+  console.log('跳转到直播间', id)
+  router.push(`/liveRoom?roomId=${id}`)
+}
+
+// 滚动监听
 onMounted(() => {
   queryPage()
   window.addEventListener('scroll', handleScroll)
@@ -59,7 +67,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
-
 const isAtBottom = ref(false)
 const handleScroll = () => {
   const scrollTop = window.scrollY
@@ -91,13 +98,8 @@ const scrollToTop = () => {
 .content {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
   align-items: center;
-}
-
-.card {
-  flex: 1;
-  margin: 5px 30px;
+  padding: 0 40px;
 }
 
 .loading-bar {

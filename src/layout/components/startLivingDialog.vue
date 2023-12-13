@@ -28,12 +28,10 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch } from 'vue'
-import { livingStore } from '@/store'
 import { startLiving } from '@/api/living'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
 const toast = useToast()
-const liveStore = livingStore()
 const props = defineProps({
   modelValue: Boolean
 })
@@ -60,9 +58,8 @@ const goLive = async (type: number) => {
     toast.success('开播成功', {
       timeout: 2000
     })
-    liveStore.setRoomId(res.data)
     liveDialogVisible.value = false
-    router.push('/liveRoom')
+    router.push('/liveRoom?roomId=' + res.data)
   } else {
     toast.error(res.message, {
       timeout: 2000
