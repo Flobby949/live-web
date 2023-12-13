@@ -8,6 +8,11 @@ export interface ResponseData<T> {
   message: string
 }
 
+export interface PageRespVO<T> {
+  list: T[]
+  hasNext: boolean
+}
+
 // 创建 axios 实例
 const request: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_API as string, // api base_url

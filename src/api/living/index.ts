@@ -1,4 +1,4 @@
-import { ResponseData, request } from '@/utils/request'
+import { ResponseData, request, PageRespVO } from '@/utils/request'
 
 const LIVING = '/living'
 
@@ -8,6 +8,22 @@ export interface LivingRoomInitVO {
   anchorImg: string
   roomName: string
   isAnchor: boolean
+}
+
+export interface LivingRoomInfoVO {
+  id?: number
+  type?: number
+  roomName?: string
+  anchorId?: number
+  watchNum?: number
+  goodNum?: number
+  covertImg?: string
+}
+
+export interface liveListPageDTO {
+  page: number
+  pageSize: number
+  type?: number
 }
 
 export const startLiving = (type: number): Promise<ResponseData<any>> => {
@@ -21,5 +37,11 @@ export const closeLiving = (roomId: number): Promise<ResponseData<any>> => {
 export const livingInfo = (roomId: number): Promise<ResponseData<LivingRoomInitVO>> => {
   return request
     .post<ResponseData<LivingRoomInitVO>>(LIVING + `/anchor-config?roomId=${roomId}`)
+    .then((response) => response.data)
+}
+
+export const livingListByPage = (req: liveListPageDTO): Promise<ResponseData<PageRespVO<LivingRoomInfoVO>>> => {
+  return request
+    .post<ResponseData<PageRespVO<LivingRoomInfoVO>>>(LIVING + '/query-page', req)
     .then((response) => response.data)
 }

@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@vueuse/core':
+    specifier: ^10.7.0
+    version: registry.npmmirror.com/@vueuse/core@10.7.0(vue@3.3.9)
   axios:
     specifier: ^1.6.2
     version: registry.npmmirror.com/axios@1.6.2
@@ -945,6 +948,12 @@ packages:
     version: 7.5.6
     dev: true
 
+  registry.npmmirror.com/@types/web-bluetooth@0.0.20:
+    resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==, tarball: https://registry.npmmirror.com/@types/web-bluetooth/-/web-bluetooth-0.0.20.tgz}
+    name: '@types/web-bluetooth'
+    version: 0.0.20
+    dev: false
+
   registry.npmmirror.com/@typescript-eslint/eslint-plugin@6.13.1(@typescript-eslint/parser@6.13.1)(eslint@8.54.0)(typescript@5.3.2):
     resolution: {integrity: sha512-5bQDGkXaxD46bPvQt08BUz9YSaO4S0fB1LB5JHQuXTfkGPI3+UUeS387C/e9jRie5GqT8u5kFTrMvAjtX4O5kA==, tarball: https://registry.npmmirror.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-6.13.1.tgz}
     id: registry.npmmirror.com/@typescript-eslint/eslint-plugin/6.13.1
@@ -1317,6 +1326,39 @@ packages:
     resolution: {integrity: sha512-ZE0VTIR0LmYgeyhurPTpy4KzKsuDyQbMSdM49eKkMnT5X4VfFBLysMzjIZhLEFQYjjOVVfbvUDHckwjDFiO2eA==, tarball: https://registry.npmmirror.com/@vue/shared/-/shared-3.3.9.tgz}
     name: '@vue/shared'
     version: 3.3.9
+
+  registry.npmmirror.com/@vueuse/core@10.7.0(vue@3.3.9):
+    resolution: {integrity: sha512-4EUDESCHtwu44ZWK3Gc/hZUVhVo/ysvdtwocB5vcauSV4B7NiGY5972WnsojB3vRNdxvAt7kzJWE2h9h7C9d5w==, tarball: https://registry.npmmirror.com/@vueuse/core/-/core-10.7.0.tgz}
+    id: registry.npmmirror.com/@vueuse/core/10.7.0
+    name: '@vueuse/core'
+    version: 10.7.0
+    dependencies:
+      '@types/web-bluetooth': registry.npmmirror.com/@types/web-bluetooth@0.0.20
+      '@vueuse/metadata': registry.npmmirror.com/@vueuse/metadata@10.7.0
+      '@vueuse/shared': registry.npmmirror.com/@vueuse/shared@10.7.0(vue@3.3.9)
+      vue-demi: registry.npmmirror.com/vue-demi@0.14.6(vue@3.3.9)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
+
+  registry.npmmirror.com/@vueuse/metadata@10.7.0:
+    resolution: {integrity: sha512-GlaH7tKP2iBCZ3bHNZ6b0cl9g0CJK8lttkBNUX156gWvNYhTKEtbweWLm9rxCPIiwzYcr/5xML6T8ZUEt+DkvA==, tarball: https://registry.npmmirror.com/@vueuse/metadata/-/metadata-10.7.0.tgz}
+    name: '@vueuse/metadata'
+    version: 10.7.0
+    dev: false
+
+  registry.npmmirror.com/@vueuse/shared@10.7.0(vue@3.3.9):
+    resolution: {integrity: sha512-kc00uV6CiaTdc3i1CDC4a3lBxzaBE9AgYNtFN87B5OOscqeWElj/uza8qVDmk7/U8JbqoONLbtqiLJ5LGRuqlw==, tarball: https://registry.npmmirror.com/@vueuse/shared/-/shared-10.7.0.tgz}
+    id: registry.npmmirror.com/@vueuse/shared/10.7.0
+    name: '@vueuse/shared'
+    version: 10.7.0
+    dependencies:
+      vue-demi: registry.npmmirror.com/vue-demi@0.14.6(vue@3.3.9)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
 
   registry.npmmirror.com/@webassemblyjs/ast@1.11.6:
     resolution: {integrity: sha512-IN1xI7PwOvLPgjcf180gC1bqn3q/QaOCwYUahIOhbYUu8KA/3tw2RT/T0Gidi1l7Hhj5D/INhJxiICObqpMu4Q==, tarball: https://registry.npmmirror.com/@webassemblyjs/ast/-/ast-1.11.6.tgz}
