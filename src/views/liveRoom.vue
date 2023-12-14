@@ -46,7 +46,7 @@
               </div>
               <div v-show="chatItem.msgType == 1">
                 <div class="user-name">{{ chatItem.msg.senderName }}</div>
-                <img :src="chatItem.msg.senderImg" class="chat-avatar" />
+                <img :src="chatItem.msg.senderAvatar" class="chat-avatar" />
               </div>
               <div class="chat-content" v-show="chatItem.msgType == 1">
                 {{ chatItem.msg.content }}
@@ -54,7 +54,7 @@
             </div>
           </div>
           <div class="comment-bar">
-            <v-form @submit.prevent ref="form">
+            <v-form ref="form" @submit.prevent>
               <v-text-field
                 v-model="form.review"
                 @keyup.enter="sendReview"
@@ -96,13 +96,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { closeLiving, livingInfo } from '@/api/living'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { closeLiving, livingInfo, LivingRoomInitVO } from '@/api/living'
 import { getImConfig, ImConfigVO } from '@/api/im'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
 import { userStore } from '@/store'
 import { storeToRefs } from 'pinia'
+import { utf8ByteToUnicodeStr } from '@/utils/common'
 const toast = useToast()
 const userInfo = userStore()
 const roomId = ref(-1)
@@ -111,23 +112,28 @@ const { user } = storeToRefs(userInfo)
 const route = router.currentRoute.value
 const { query } = route
 
+const livingRoomInfo = ref<LivingRoomInitVO>()
 onMounted(() => {
   roomId.value = Number(query.roomId)
-  if (roomId.value === -1) {
+  if (roomId.value === -1 || roomId.value === undefined || roomId.value === null) {
     console.log('获取直播间id失败')
     return
   }
   livingInfo(roomId.value).then((res) => {
     if (res.success) {
       console.log('获取直播间信息成功')
-      console.log(res.data)
+      livingRoomInfo.value = res.data
+      connectImServer()
     } else {
       console.log('获取直播间信息失败')
       toast.error(res.message)
       router.push('/home')
     }
   })
-  connectImServer()
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timer.value)
 })
 
 const closeDialogVisible = ref(false)
@@ -158,7 +164,7 @@ const connectImServer = async () => {
     return
   }
   imConfig.value = connectResult.data
-  const wsUrl = `ws://${imConfig.value.wsImServerAddress}/Authorization=${imConfig.value.token}&&userId=${user.value.userId}`
+  const wsUrl = `ws://${imConfig.value.wsImServerAddress}?token=${imConfig.value.token}&userId=${user.value.userId}&roomId=${roomId.value}`
   console.log(`WebSocket连接地址: ${wsUrl}`)
   webSocket.value = new WebSocket(wsUrl)
   webSocket.value.onopen = webSocketOnOpen
@@ -179,7 +185,47 @@ const webSocketOnError = (e: Event) => {
 }
 const webSocketOnMessage = (event: MessageEvent) => {
   console.log('WebSocket接收到消息')
-  console.log(event)
+  const wsData = JSON.parse(event.data)
+  console.log(wsData)
+  if (wsData.code === 1001) {
+    startHeartBeat()
+  } else if (wsData.code === 1003) {
+    const respData = JSON.parse(utf8ByteToUnicodeStr(wsData.body))
+    if (respData.bizCode === 5555) {
+      // 处理聊天消息
+      const respMsg = JSON.parse(respData.data)
+      const sendMsg = { content: respMsg.content, senderName: respMsg.senderName, senderAvatar: respMsg.senderAvatar }
+      const msgWrapper = { msgType: 1, msg: sendMsg }
+      console.log(sendMsg)
+      chatList.value.push(msgWrapper)
+      //发送ack确认消息
+      const jsonStr = { userId: livingRoomInfo.value?.userId, appId: 10001, msgId: respData.msgId }
+      const bodyStr = JSON.stringify(jsonStr)
+      const ackMsgStr = { magic: 19231, code: 1005, len: bodyStr.length, body: bodyStr }
+      webSocketSend(JSON.stringify(ackMsgStr))
+    }
+  }
+}
+
+const webSocketSend = (msg: string) => {
+  if (webSocket.value !== undefined) {
+    webSocket.value.send(msg)
+  }
+}
+
+const timer = ref()
+const startHeartBeat = () => {
+  console.log('首次登陆成功, 开始心跳')
+  const jsonStr = JSON.stringify({ userId: user.value.userId, appId: 10001 })
+  const heartBeatJsonStr = {
+    magic: 19231,
+    code: 1004,
+    len: jsonStr.length,
+    body: jsonStr
+  }
+  timer.value = setInterval(() => {
+    webSocketSend(JSON.stringify(heartBeatJsonStr))
+  }, 30000)
 }
 
 const accountInfo = ref({ currentBalance: 0 })
@@ -188,52 +234,40 @@ const giftList = ref([
   { svgaUrl: 'url2', giftId: 2, giftName: '礼物2', coverImgUrl: 'cover2.jpg', price: 200 }
   // ...更多礼物
 ])
-const showBankInfo = ref(false)
-const payProducts = ref([
-  { id: 1, name: '产品1', coinNum: 1000 },
-  { id: 2, name: '产品2', coinNum: 2000 }
-  // ...更多产品
-])
-const qrCode = ref('')
-const showGiftRank = ref(false)
-const rankList = ref([
-  { index: 1, avatar: 'avatar1.jpg', nickname: '用户1', score: 500 },
-  { index: 2, avatar: 'avatar2.jpg', nickname: '用户2', score: 400 }
-  // ...更多排名
-])
-const chatList = ref([
-  { msgType: 1, msg: { senderName: '用户A', senderImg: '@/assets/img/anchor.jpg', content: '你好啊' } },
-  { msgType: 5, msg: '这是一个礼物消息' }
-  // ...更多聊天消息
-])
+const chatList = ref([])
 const form = ref({ review: '' })
-
-// 方法定义
-const showBankInfoTab = () => {
-  console.log('显示银行信息标签页')
-}
-
-const hiddenBankInfoTabNow = () => {
-  console.log('立即隐藏银行信息标签页')
-}
 
 const sendGift = (svgaUrl: string, giftId: number, giftName: string) => {
   console.log(`发送礼物: ${svgaUrl}, ${giftId}, ${giftName}`)
 }
-
-const chooseCoin = (id: number) => {
-  console.log(`选择硬币: ${id}`)
-}
-
-const hiddenGiftRankNow = () => {
-  console.log('隐藏礼物排行榜')
-}
-
+// 发送弹幕
 const sendReview = () => {
   if (form.value.review === undefined || form.value.review === '' || form.value.review.length === 0) {
+    // toast.error('评论内容不能为空')
     return
   }
-  console.log('发送评论')
+  const sendMsg = {
+    content: form.value.review,
+    senderName: livingRoomInfo.value?.nickName,
+    senderAvatar: livingRoomInfo.value?.avatar
+  }
+  const msgWrapper = { msgType: 1, msg: sendMsg }
+  chatList.value.push(msgWrapper)
+
+  //发送评论消息给到im服务器
+  const msgBody = {
+    roomId: roomId.value,
+    type: 1,
+    content: form.value.review,
+    senderName: livingRoomInfo.value?.nickName,
+    senderAvatar: livingRoomInfo.value?.avatar
+  }
+  console.log(livingRoomInfo.value)
+  const jsonStr = { userId: livingRoomInfo.value?.userId, appId: 10001, bizCode: 5555, data: JSON.stringify(msgBody) }
+  const bodyStr = JSON.stringify(jsonStr)
+  const reviewMsg = { magic: 19231, code: 1003, len: bodyStr.length, body: bodyStr }
+  console.log(reviewMsg)
+  webSocketSend(JSON.stringify(reviewMsg))
   form.value.review = ''
 }
 </script>
@@ -252,12 +286,12 @@ const sendReview = () => {
 
 .talk-content-box {
   display: flex;
-  flex: 1;
+  flex-direction: column;
+  height: 94%;
   background-color: white;
   overflow-y: scroll;
   border: solid 1px rgba(225, 225, 225, 0.37);
   border-radius: 3px;
-  /*background-color: #272727*/
 }
 
 .chat-content {

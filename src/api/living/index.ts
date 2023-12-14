@@ -8,6 +8,9 @@ export interface LivingRoomInitVO {
   anchorImg: string
   roomName: string
   isAnchor: boolean
+  userId: number
+  avatar: string
+  nickName: string
 }
 
 export interface LivingRoomInfoVO {
