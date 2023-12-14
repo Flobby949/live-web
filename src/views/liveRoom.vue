@@ -98,18 +98,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { closeLiving, livingInfo } from '@/api/living'
+import { getImConfig, ImConfigVO } from '@/api/im'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
+import { userStore } from '@/store'
+import { storeToRefs } from 'pinia'
 const toast = useToast()
-
+const userInfo = userStore()
 const roomId = ref(-1)
-
+const { user } = storeToRefs(userInfo)
 // 从路由获取直播间id
 const route = router.currentRoute.value
 const { query } = route
 
 onMounted(() => {
-  console.log(route)
   roomId.value = Number(query.roomId)
   if (roomId.value === -1) {
     console.log('获取直播间id失败')
@@ -125,13 +127,14 @@ onMounted(() => {
       router.push('/home')
     }
   })
+  connectImServer()
 })
 
 const closeDialogVisible = ref(false)
 const showCloseDialog = () => {
   closeDialogVisible.value = true
 }
-
+// 关闭直播间
 const closeLivingNow = () => {
   closeLiving(roomId.value).then((res) => {
     if (res.success) {
@@ -142,6 +145,41 @@ const closeLivingNow = () => {
       toast.error(res.message)
     }
   })
+}
+
+// 连接IM服务
+const imConfig = ref<ImConfigVO>()
+const webSocket = ref<WebSocket>()
+const connectImServer = async () => {
+  const connectResult = await getImConfig()
+  if (!connectResult.success) {
+    console.log('获取IM配置失败')
+    toast.error(connectResult.message)
+    return
+  }
+  imConfig.value = connectResult.data
+  const wsUrl = `ws://${imConfig.value.wsImServerAddress}/Authorization=${imConfig.value.token}&&userId=${user.value.userId}`
+  console.log(`WebSocket连接地址: ${wsUrl}`)
+  webSocket.value = new WebSocket(wsUrl)
+  webSocket.value.onopen = webSocketOnOpen
+  webSocket.value.onclose = webSocketOnClose
+  webSocket.value.onerror = webSocketOnError
+  webSocket.value.onmessage = webSocketOnMessage
+}
+
+const webSocketOnOpen = () => {
+  console.log('WebSocket连接成功')
+}
+const webSocketOnClose = () => {
+  console.log('WebSocket连接关闭')
+}
+const webSocketOnError = (e: Event) => {
+  console.log(e)
+  console.log('WebSocket连接错误')
+}
+const webSocketOnMessage = (event: MessageEvent) => {
+  console.log('WebSocket接收到消息')
+  console.log(event)
 }
 
 const accountInfo = ref({ currentBalance: 0 })
