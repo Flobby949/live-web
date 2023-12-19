@@ -6,23 +6,34 @@
           <div class="liveroom_top">
             <div style="position: relative; top: -20px">
               <div class="anchor_name">
-                <div style="display: inline-block">主播名称</div>
+                <div style="display: inline-block">{{ livingRoomInfo?.nickName }}</div>
                 <img src="@/assets/img/living.jpg" class="anchor_label" alt="" />
               </div>
-              <img src="@/assets/img/anchor.jpeg" class="anchor_img" alt="" />
+              <img :src="livingRoomInfo?.avatar" class="anchor_img" alt="" />
             </div>
-            <v-btn style="background-color: #966bff; color: #fff" @click="showCloseDialog">关闭直播</v-btn>
+            <v-btn
+              style="background-color: #966bff; color: #fff"
+              @click="showCloseDialog"
+              v-if="user.userId === livingRoomInfo?.anchorId"
+              >关闭直播</v-btn
+            >
           </div>
           <video width="100%" style="background-color: rgb(18, 9, 37); flex: 1">
             <!-- <source src="test.mp4"> -->
           </video>
+          <canvas class="svga-wrap" ref="canvas"></canvas>
           <div class="gift_content">
             <div class="gift_content_title">礼物面板</div>
             <div class="bank_tab">
               <span @click="showBankInfoTab()"> 钱包余额: </span>
               <span style="color: white">{{ accountInfo.currentBalance }}</span>
             </div>
-            <div class="gift_item" v-for="(item, index) in giftList" :key="index">
+            <div class="gift-bar">
+              <template v-for="item in giftList" :key="item.giftId">
+                <gift-card-item @click="playGiftSvga(item.svgaUrl)" :gift="item" />
+              </template>
+            </div>
+            <!-- <div class="gift_item" v-for="(item, index) in giftList" :key="index">
               <img
                 @click="sendGift(item.svgaUrl, item.giftId, item.giftName)"
                 :src="item.coverImgUrl"
@@ -31,7 +42,7 @@
               />
               <div class="gift_item_name">{{ item.giftName }}</div>
               <div class="gift_item_price">{{ item.price }}旗鱼币</div>
-            </div>
+            </div> -->
           </div>
         </div>
       </v-col>
@@ -104,6 +115,10 @@ import router from '@/router'
 import { userStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { utf8ByteToUnicodeStr } from '@/utils/common'
+import giftCardItem from '@/components/giftCardItem.vue'
+import SVGA from 'svga.lite'
+import { GiftConfigVO, listGift } from '@/api/gift'
+
 const toast = useToast()
 const userInfo = userStore()
 const roomId = ref(-1)
@@ -114,6 +129,7 @@ const { query } = route
 
 const livingRoomInfo = ref<LivingRoomInitVO>()
 onMounted(() => {
+  queryGiftList()
   roomId.value = Number(query.roomId)
   if (roomId.value === -1 || roomId.value === undefined || roomId.value === null) {
     console.log('获取直播间id失败')
@@ -130,6 +146,7 @@ onMounted(() => {
       router.push('/home')
     }
   })
+  initSvga()
 })
 
 onBeforeUnmount(() => {
@@ -146,9 +163,11 @@ const closeLivingNow = () => {
     if (res.success) {
       toast.success('关闭直播间成功')
       router.push('/home')
+      closeDialogVisible.value = false
     } else {
       console.log('关闭直播间失败')
       toast.error(res.message)
+      closeDialogVisible.value = false
     }
   })
 }
@@ -229,17 +248,10 @@ const startHeartBeat = () => {
 }
 
 const accountInfo = ref({ currentBalance: 0 })
-const giftList = ref([
-  { svgaUrl: 'url1', giftId: 1, giftName: '礼物1', coverImgUrl: 'cover1.jpg', price: 100 },
-  { svgaUrl: 'url2', giftId: 2, giftName: '礼物2', coverImgUrl: 'cover2.jpg', price: 200 }
-  // ...更多礼物
-])
+
 const chatList = ref([])
 const form = ref({ review: '' })
-
-const sendGift = (svgaUrl: string, giftId: number, giftName: string) => {
-  console.log(`发送礼物: ${svgaUrl}, ${giftId}, ${giftName}`)
-}
+const showBankInfoTab = () => {}
 // 发送弹幕
 const sendReview = () => {
   if (form.value.review === undefined || form.value.review === '' || form.value.review.length === 0) {
@@ -269,6 +281,39 @@ const sendReview = () => {
   console.log(reviewMsg)
   webSocketSend(JSON.stringify(reviewMsg))
   form.value.review = ''
+}
+
+// 礼物相关
+const giftList = ref<GiftConfigVO[]>()
+const queryGiftList = () => {
+  listGift().then((res) => {
+    if (res.success) {
+      giftList.value = res.data
+    }
+  })
+}
+
+const canvas = ref()
+const player = ref()
+const parser = ref()
+const downloader = ref()
+const initSvga = () => {
+  console.log(typeof canvas.value)
+  player.value = new SVGA.Player(canvas.value)
+  player.value.loop = 1
+  downloader.value = new SVGA.Downloader()
+  parser.value = new SVGA.Parser()
+}
+const playGiftSvga = async (url: string) => {
+  player.value.clear()
+  const svga = await downloader.value.get(url)
+  const videoItem = await parser.value.do(svga)
+  await player.value.mount(videoItem)
+  player.value.start()
+  player.value.$on('end', () => {
+    player.value.clear()
+    console.log('播放完毕')
+  })
 }
 </script>
 
@@ -362,34 +407,6 @@ const sendReview = () => {
   text-align: center;
 }
 
-.gift_img {
-  width: 80px;
-  height: 80px;
-  margin-left: 3px;
-  border: 2px solid rgba(255, 255, 255, 0);
-}
-
-.gift_item {
-  display: inline-block;
-}
-
-.gift_item_name {
-  text-align: center;
-  color: white;
-  font-size: 15px;
-}
-
-.gift_item_price {
-  text-align: center;
-  color: #ffa84c;
-  font-size: 12px;
-}
-
-.gift_img:hover {
-  border: 2px solid #ffa925;
-  border-radius: 5px;
-}
-
 .liveroom_top {
   display: flex;
   height: 100px;
@@ -429,5 +446,25 @@ const sendReview = () => {
   height: 50px;
   box-sizing: border-box;
   padding: 5px;
+}
+
+.svga-wrap {
+  border: solid;
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  transform: translateX(-65%);
+  top: 30%;
+  height: 30%;
+  width: 40%;
+}
+
+.gift-bar {
+  z-index: 15;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  align-items: center;
 }
 </style>

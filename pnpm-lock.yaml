@@ -14,12 +14,18 @@ dependencies:
   pinia:
     specifier: ^2.1.7
     version: registry.npmmirror.com/pinia@2.1.7(typescript@5.3.2)(vue@3.3.9)
+  svga.lite:
+    specifier: ^1.6.1
+    version: registry.npmmirror.com/svga.lite@1.6.1
   vue:
     specifier: ^3.3.8
     version: registry.npmmirror.com/vue@3.3.9(typescript@5.3.2)
   vue-router:
     specifier: ^4.2.5
     version: registry.npmmirror.com/vue-router@4.2.5(vue@3.3.9)
+  vue-svg:
+    specifier: ^1.0.1
+    version: registry.npmmirror.com/vue-svg@1.0.1
   vue-toastification:
     specifier: 2.0.0-rc.5
     version: registry.npmmirror.com/vue-toastification@2.0.0-rc.5(vue@3.3.9)
@@ -2264,6 +2270,14 @@ packages:
       esutils: registry.npmmirror.com/esutils@2.0.3
     dev: true
 
+  registry.npmmirror.com/dom-select@0.0.0:
+    resolution: {integrity: sha512-8QrDgvidpgjZXQ+3Bjx1o8nToQpESsnweeLlKw0iI9/eujKtRjO5HwfCMdnRkuFLJdcRzZV2196Obp+8Gi2CgQ==, tarball: https://registry.npmmirror.com/dom-select/-/dom-select-0.0.0.tgz}
+    name: dom-select
+    version: 0.0.0
+    dependencies:
+      qwery: registry.npmmirror.com/qwery@3.4.2
+    dev: false
+
   registry.npmmirror.com/dot-prop@5.3.0:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==, tarball: https://registry.npmmirror.com/dot-prop/-/dot-prop-5.3.0.tgz}
     name: dot-prop
@@ -4498,6 +4512,12 @@ packages:
     engines: {node: '>= 0.8.0'}
     dev: true
 
+  registry.npmmirror.com/prepend-child@1.0.1:
+    resolution: {integrity: sha512-5+s5r0gW0EgSqEINIJUHBgf00R5NuoKtBUpaStAP6QCPSFSTtiZWy1RSnwA7bRI0JQpoO4JCH1aX4n0g4SGZpQ==, tarball: https://registry.npmmirror.com/prepend-child/-/prepend-child-1.0.1.tgz}
+    name: prepend-child
+    version: 1.0.1
+    dev: false
+
   registry.npmmirror.com/prettier-linter-helpers@1.0.0:
     resolution: {integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==, tarball: https://registry.npmmirror.com/prettier-linter-helpers/-/prettier-linter-helpers-1.0.0.tgz}
     name: prettier-linter-helpers
@@ -4540,6 +4560,12 @@ packages:
     version: 4.0.1
     engines: {node: '>=8'}
     dev: true
+
+  registry.npmmirror.com/qwery@3.4.2:
+    resolution: {integrity: sha512-uFi9tZZ6ZjJWIrKPK/Rs3n+xVo2Zu75FdKyS9Q9YCg1Vme4NArTqoT7fORwtvsbQQQcjPOzUZp/rz5scHRaJqQ==, tarball: https://registry.npmmirror.com/qwery/-/qwery-3.4.2.tgz}
+    name: qwery
+    version: 3.4.2
+    dev: false
 
   registry.npmmirror.com/randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==, tarball: https://registry.npmmirror.com/randombytes/-/randombytes-2.1.0.tgz}
@@ -5124,6 +5150,12 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
+  registry.npmmirror.com/svga.lite@1.6.1:
+    resolution: {integrity: sha512-imw16yqYG13i6gTmSIvFeZWiJ8o/S+WkmmA/qtCjV8GZqfFdOIB7KG3GBG3NrcMylXTf25nvHO/5Fed4l4AITg==, tarball: https://registry.npmmirror.com/svga.lite/-/svga.lite-1.6.1.tgz}
+    name: svga.lite
+    version: 1.6.1
+    dev: false
+
   registry.npmmirror.com/synckit@0.8.5:
     resolution: {integrity: sha512-L1dapNV6vu2s/4Sputv8xGsCdAVlb5nRDMFU/E27D44l5U6cw1g0dGd45uLc+OXjNMmF4ntiMdCimzcjFKQI8Q==, tarball: https://registry.npmmirror.com/synckit/-/synckit-0.8.5.tgz}
     name: synckit
@@ -5574,6 +5606,15 @@ packages:
     dependencies:
       '@vue/devtools-api': registry.npmmirror.com/@vue/devtools-api@6.5.1
       vue: registry.npmmirror.com/vue@3.3.9(typescript@5.3.2)
+    dev: false
+
+  registry.npmmirror.com/vue-svg@1.0.1:
+    resolution: {integrity: sha512-N7kKpP8MgoJoItPKM9FWR3DZEpzDIwhqAnISuiqZTCaJ4hkOev0tVIPL3+NhPy7gj1QUOY7qG9f6S4LdBp3mvQ==, tarball: https://registry.npmmirror.com/vue-svg/-/vue-svg-1.0.1.tgz}
+    name: vue-svg
+    version: 1.0.1
+    dependencies:
+      dom-select: registry.npmmirror.com/dom-select@0.0.0
+      prepend-child: registry.npmmirror.com/prepend-child@1.0.1
     dev: false
 
   registry.npmmirror.com/vue-template-compiler@2.7.15:
