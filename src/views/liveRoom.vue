@@ -30,7 +30,7 @@
             </div>
             <div class="gift-bar">
               <template v-for="item in giftList" :key="item.giftId">
-                <gift-card-item @click="playGiftSvga(item.svgaUrl)" :gift="item" />
+                <gift-card-item @click="sendGift(item)" :gift="item" />
               </template>
             </div>
             <!-- <div class="gift_item" v-for="(item, index) in giftList" :key="index">
@@ -117,7 +117,7 @@ import { storeToRefs } from 'pinia'
 import { utf8ByteToUnicodeStr } from '@/utils/common'
 import giftCardItem from '@/components/giftCardItem.vue'
 import SVGA from 'svga.lite'
-import { GiftConfigVO, listGift } from '@/api/gift'
+import { GiftConfigVO, GiftSendDTO, listGift, send } from '@/api/gift'
 
 const toast = useToast()
 const userInfo = userStore()
@@ -210,20 +210,30 @@ const webSocketOnMessage = (event: MessageEvent) => {
     startHeartBeat()
   } else if (wsData.code === 1003) {
     const respData = JSON.parse(utf8ByteToUnicodeStr(wsData.body))
+    const respMsg = JSON.parse(respData.data)
+    console.log(respMsg)
     if (respData.bizCode === 5555) {
       // 处理聊天消息
-      const respMsg = JSON.parse(respData.data)
       const sendMsg = { content: respMsg.content, senderName: respMsg.senderName, senderAvatar: respMsg.senderAvatar }
       const msgWrapper = { msgType: 1, msg: sendMsg }
       console.log(sendMsg)
       chatList.value.push(msgWrapper)
-      //发送ack确认消息
-      const jsonStr = { userId: livingRoomInfo.value?.userId, appId: 10001, msgId: respData.msgId }
-      const bodyStr = JSON.stringify(jsonStr)
-      const ackMsgStr = { magic: 19231, code: 1005, len: bodyStr.length, body: bodyStr }
-      webSocketSend(JSON.stringify(ackMsgStr))
+    } else if (respData.bizCode === 5556) {
+      //送礼成功
+      playGiftSvga(respMsg.url)
+    } else if (respData.bizCode === 5557) {
+      toast.error(respMsg.msg)
     }
+    sendAckCode(respData)
   }
+}
+
+const sendAckCode = (respData: any) => {
+  //发送ack确认消息
+  const jsonStr = { userId: livingRoomInfo.value?.userId, appId: 10001, msgId: respData.msgId }
+  const bodyStr = JSON.stringify(jsonStr)
+  const ackMsgStr = { magic: 19231, code: 1005, len: bodyStr.length, body: bodyStr }
+  webSocketSend(JSON.stringify(ackMsgStr))
 }
 
 const webSocketSend = (msg: string) => {
@@ -314,6 +324,19 @@ const playGiftSvga = async (url: string) => {
     player.value.clear()
     console.log('播放完毕')
   })
+}
+const sendGift = async (gift: GiftConfigVO) => {
+  const params = {
+    roomId: roomId.value,
+    giftId: gift.giftId,
+    senderUserId: user.value.userId,
+    receiverId: livingRoomInfo.value?.anchorId
+  } as GiftSendDTO
+
+  const result = await send(params)
+  if (!result.success) {
+    toast.error(result.message)
+  }
 }
 </script>
 
