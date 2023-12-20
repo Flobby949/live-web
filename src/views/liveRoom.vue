@@ -24,25 +24,15 @@
           <canvas class="svga-wrap" ref="canvas"></canvas>
           <div class="gift_content">
             <div class="gift_content_title">礼物面板</div>
-            <div class="bank_tab">
-              <span @click="showBankInfoTab()"> 钱包余额: </span>
-              <span style="color: white">{{ accountInfo.currentBalance }}</span>
+            <div class="bank_tab" @click="showBankInfoTab()">
+              <span> 钱包余额: </span>
+              <span style="color: white">{{ currentBalance }}</span>
             </div>
             <div class="gift-bar">
               <template v-for="item in giftList" :key="item.giftId">
                 <gift-card-item @click="sendGift(item)" :gift="item" />
               </template>
             </div>
-            <!-- <div class="gift_item" v-for="(item, index) in giftList" :key="index">
-              <img
-                @click="sendGift(item.svgaUrl, item.giftId, item.giftName)"
-                :src="item.coverImgUrl"
-                class="gift_img"
-                alt=""
-              />
-              <div class="gift_item_name">{{ item.giftName }}</div>
-              <div class="gift_item_price">{{ item.price }}旗鱼币</div>
-            </div> -->
           </div>
         </div>
       </v-col>
@@ -104,6 +94,8 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <recharge-card v-model="rechargeCardVisible" :current-balance="currentBalance" :pay-products="payProducts" />
 </template>
 
 <script setup lang="ts">
@@ -118,7 +110,8 @@ import { utf8ByteToUnicodeStr } from '@/utils/common'
 import giftCardItem from '@/components/giftCardItem.vue'
 import SVGA from 'svga.lite'
 import { GiftConfigVO, GiftSendDTO, listGift, send } from '@/api/gift'
-
+import { PayProductItemVO, payProductList } from '@/api/bank'
+import rechargeCard from '@/components/rechargeCard.vue'
 const toast = useToast()
 const userInfo = userStore()
 const roomId = ref(-1)
@@ -147,6 +140,7 @@ onMounted(() => {
     }
   })
   initSvga()
+  getPayProducts()
 })
 
 onBeforeUnmount(() => {
@@ -214,14 +208,17 @@ const webSocketOnMessage = (event: MessageEvent) => {
     console.log(respMsg)
     if (respData.bizCode === 5555) {
       // 处理聊天消息
+      console.log('收到聊天消息')
       const sendMsg = { content: respMsg.content, senderName: respMsg.senderName, senderAvatar: respMsg.senderAvatar }
       const msgWrapper = { msgType: 1, msg: sendMsg }
       console.log(sendMsg)
       chatList.value.push(msgWrapper)
     } else if (respData.bizCode === 5556) {
       //送礼成功
+      console.log('收到送礼消息')
       playGiftSvga(respMsg.url)
     } else if (respData.bizCode === 5557) {
+      console.log('送礼失败')
       toast.error(respMsg.msg)
     }
     sendAckCode(respData)
@@ -257,11 +254,8 @@ const startHeartBeat = () => {
   }, 30000)
 }
 
-const accountInfo = ref({ currentBalance: 0 })
-
 const chatList = ref([])
 const form = ref({ review: '' })
-const showBankInfoTab = () => {}
 // 发送弹幕
 const sendReview = () => {
   if (form.value.review === undefined || form.value.review === '' || form.value.review.length === 0) {
@@ -337,6 +331,23 @@ const sendGift = async (gift: GiftConfigVO) => {
   if (!result.success) {
     toast.error(result.message)
   }
+}
+
+// 充值相关
+const rechargeCardVisible = ref(false)
+const currentBalance = ref(0)
+const payProducts = ref<PayProductItemVO[]>()
+const showBankInfoTab = () => {
+  rechargeCardVisible.value = true
+}
+const getPayProducts = async () => {
+  const res = await payProductList(0)
+  if (!res.success) {
+    toast.error(res.message)
+    return
+  }
+  currentBalance.value = res.data.currentBalance
+  payProducts.value = res.data.productList
 }
 </script>
 

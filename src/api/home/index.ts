@@ -1,6 +1,6 @@
-import { ResponseData, request } from '@/utils/request'
+import { ResponseData, request, API_PREFIX } from '@/utils/request'
 
-const HOME_PAGE = '/home-page'
+const HOME_PAGE = API_PREFIX.LIVE_API + '/home-page'
 
 export interface HomePageUserVO {
   userId: number

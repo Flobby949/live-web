@@ -1,6 +1,6 @@
-import { ResponseData, request } from '@/utils/request'
+import { ResponseData, request, API_PREFIX } from '@/utils/request'
 
-const GIFT = '/gift'
+const GIFT = API_PREFIX.LIVE_API + '/gift'
 
 export interface GiftConfigVO {
   giftId: number

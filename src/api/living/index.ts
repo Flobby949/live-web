@@ -1,6 +1,6 @@
-import { ResponseData, request, PageRespVO } from '@/utils/request'
+import { ResponseData, request, PageRespVO, API_PREFIX } from '@/utils/request'
 
-const LIVING = '/living'
+const LIVING = API_PREFIX.LIVE_API + '/living'
 
 export interface LivingRoomInitVO {
   roomId: number

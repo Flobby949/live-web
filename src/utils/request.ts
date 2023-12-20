@@ -13,6 +13,11 @@ export interface PageRespVO<T> {
   hasNext: boolean
 }
 
+export enum API_PREFIX {
+  LIVE_API = '/live-api',
+  BANK_API = '/live-bank-api'
+}
+
 // 创建 axios 实例
 const request: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_API as string, // api base_url

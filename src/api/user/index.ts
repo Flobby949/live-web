@@ -1,6 +1,6 @@
-import { ResponseData, request } from '@/utils/request'
+import { ResponseData, request, API_PREFIX } from '@/utils/request'
 
-const ACCOUNT = '/account'
+const ACCOUNT = API_PREFIX.LIVE_API + '/account'
 
 // 用户登录参数
 export interface UserLoginDto {

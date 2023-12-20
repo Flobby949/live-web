@@ -1,6 +1,6 @@
-import { ResponseData, request } from '@/utils/request'
+import { ResponseData, request, API_PREFIX } from '@/utils/request'
 
-const IM_API = '/im'
+const IM_API = API_PREFIX.LIVE_API + '/im'
 
 export interface ImConfigVO {
   token: string
