@@ -9,7 +9,7 @@
                 <div style="display: inline-block">{{ livingRoomInfo?.anchorName }}</div>
                 <img src="@/assets/img/living.jpg" class="anchor_label" alt="" />
               </div>
-              <img :src="livingRoomInfo?.avatar" class="anchor_img" alt="" />
+              <img :src="livingRoomInfo?.anchorImg" class="anchor_img" alt="" />
             </div>
             <v-btn
               style="background-color: #966bff; color: #fff"
@@ -133,7 +133,7 @@ onMounted(() => {
     console.log('获取直播间id失败')
     return
   }
-  livingInfo(roomId.value).then((res) => {
+  livingInfo(roomId.value, user.value.userId ? false : true).then((res) => {
     if (res.success) {
       console.log('获取直播间信息成功')
       livingRoomInfo.value = res.data
@@ -177,14 +177,21 @@ const closeLivingNow = () => {
 const imConfig = ref<ImConfigVO>()
 const webSocket = ref<WebSocket>()
 const connectImServer = async () => {
-  const connectResult = await getImConfig()
+  let connectResult
+  if (user.value.userId) {
+    connectResult = await getImConfig()
+  } else {
+    connectResult = await getImConfig(true)
+  }
   if (!connectResult.success) {
     console.log('获取IM配置失败')
     toast.error(connectResult.message)
     return
   }
   imConfig.value = connectResult.data
-  const wsUrl = `ws://${imConfig.value.wsImServerAddress}?token=${imConfig.value.token}&userId=${user.value.userId}&roomId=${roomId.value}`
+  const wsUrl = `ws://${imConfig.value.wsImServerAddress}?token=${imConfig.value.token}&userId=${
+    user.value.userId ? user.value.userId : 0
+  }&roomId=${roomId.value}`
   console.log(`WebSocket连接地址: ${wsUrl}`)
   webSocket.value = new WebSocket(wsUrl)
   webSocket.value.onopen = webSocketOnOpen
@@ -212,7 +219,7 @@ const webSocketOnMessage = (event: MessageEvent) => {
   } else if (wsData.code === 1003) {
     const respData = JSON.parse(utf8ByteToUnicodeStr(wsData.body))
     const respMsg = JSON.parse(respData.data)
-    console.log(respMsg)
+    console.log(respData)
     if (respData.bizCode === 5555) {
       // 处理聊天消息
       console.log('收到聊天消息')
@@ -265,6 +272,10 @@ const chatList = ref([])
 const form = ref({ review: '' })
 // 发送弹幕
 const sendReview = () => {
+  if (user.value.userId === undefined || user.value.userId === null) {
+    toast.error('请先登录')
+    return
+  }
   if (form.value.review === undefined || form.value.review === '' || form.value.review.length === 0) {
     // toast.error('评论内容不能为空')
     return
@@ -350,12 +361,17 @@ const showBankInfoTab = () => {
   rechargeCardVisible.value = true
 }
 const getPayProducts = async () => {
-  const res = await payProductList(0)
+  let res
+  if (user.value.userId) {
+    res = await payProductList(0)
+  } else {
+    res = await payProductList(0, true)
+  }
   if (!res.success) {
     toast.error(res.message)
     return
   }
-  currentBalance.value = res.data.currentBalance
+  currentBalance.value = res.data.currentBalance || 0
   payProducts.value = res.data.productList
 }
 // 刷新余额
@@ -496,7 +512,6 @@ const refreshBalance = () => {
 }
 
 .svga-wrap {
-  border: solid;
   position: absolute;
   z-index: 10;
   left: 50%;

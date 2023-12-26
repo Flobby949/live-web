@@ -25,8 +25,14 @@ export interface ProductRespVO {
   orderId: string
 }
 
-export const payProductList = (type: number): Promise<ResponseData<PayProductVO>> => {
-  return request.get<ResponseData<PayProductVO>>(BANK + `/list/${type}`).then((response) => response.data)
+export const payProductList = (type: number, skip = false): Promise<ResponseData<PayProductVO>> => {
+  return request
+    .get<ResponseData<PayProductVO>>(BANK + `/list/${type}`, {
+      headers: {
+        SKIP_VALID: skip
+      }
+    })
+    .then((response) => response.data)
 }
 
 export const pay = (req: productReqDTO): Promise<ResponseData<ProductRespVO>> => {

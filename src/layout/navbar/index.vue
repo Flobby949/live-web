@@ -80,22 +80,22 @@ const navRouter = [
     title: '主播PK',
     path: '/home?type=1',
     icon: 'mdi-account'
-  },
-  {
-    title: '周边',
-    path: '/',
-    icon: 'mdi-account'
-  },
-  {
-    title: '体育',
-    path: '/',
-    icon: 'mdi-account'
-  },
-  {
-    title: '游戏',
-    path: '/',
-    icon: 'mdi-account'
   }
+  // {
+  //   title: '周边',
+  //   path: '/',
+  //   icon: 'mdi-account'
+  // },
+  // {
+  //   title: '体育',
+  //   path: '/',
+  //   icon: 'mdi-account'
+  // },
+  // {
+  //   title: '游戏',
+  //   path: '/',
+  //   icon: 'mdi-account'
+  // }
 ]
 const { isLogin, user } = storeToRefs(store)
 // 登录 / 退出登录事件判断

@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from 'axios'
-import router from '@/router'
 import { userStore } from '@/store'
 
 export interface ResponseData<T> {
@@ -70,7 +69,6 @@ request.interceptors.response.use(
         case 401:
           // 返回 401 清除 token 信息并跳转到首页
           userStore().removeToken()
-          router.push('/')
           // 弹框提示重新登录
           err.data.message = '登录已过期，请重新登录'
           break

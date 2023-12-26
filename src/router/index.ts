@@ -29,17 +29,11 @@ const routes = [
       {
         path: '/liveRoom',
         name: 'liveRoom',
-        meta: {
-          loginRequire: true
-        },
         component: () => import('@/views/liveRoom.vue')
       },
       {
         path: '/pkLiveRoom',
         name: 'pkLiveRoom',
-        meta: {
-          loginRequire: true
-        },
         component: () => import('@/views/pkLiveRoom.vue')
       }
     ]

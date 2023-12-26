@@ -8,6 +8,14 @@ export interface ImConfigVO {
   tcpImServerAddress: string
 }
 
-export const getImConfig = (): Promise<ResponseData<ImConfigVO>> => {
-  return request.get<ResponseData<ImConfigVO>>(IM_API + '/config').then((response) => response.data)
+// 入参skip，默认值为false，表示不跳过校验
+export const getImConfig = (skip = false): Promise<ResponseData<ImConfigVO>> => {
+  // 带请求头的请求
+  return request
+    .get<ResponseData<ImConfigVO>>(IM_API + '/config', {
+      headers: {
+        SKIP_VALID: skip
+      }
+    })
+    .then((response) => response.data)
 }

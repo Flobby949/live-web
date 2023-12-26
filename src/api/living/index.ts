@@ -40,9 +40,17 @@ export const closeLiving = (roomId: number): Promise<ResponseData<any>> => {
   return request.post<ResponseData<any>>(LIVING + `/close-living?roomId=${roomId}`).then((response) => response.data)
 }
 
-export const livingInfo = (roomId: number): Promise<ResponseData<LivingRoomInitVO>> => {
+export const livingInfo = (roomId: number, skip = false): Promise<ResponseData<LivingRoomInitVO>> => {
   return request
-    .post<ResponseData<LivingRoomInitVO>>(LIVING + `/anchor-config?roomId=${roomId}`)
+    .post<ResponseData<LivingRoomInitVO>>(
+      LIVING + `/anchor-config?roomId=${roomId}`,
+      {},
+      {
+        headers: {
+          SKIP_VALID: skip
+        }
+      }
+    )
     .then((response) => response.data)
 }
 

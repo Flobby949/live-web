@@ -56,7 +56,7 @@ const queryPage = async () => {
 // 跳转到直播间
 const goToLivingRoom = (id: number) => {
   console.log('跳转到直播间', id)
-  router.push(`/${queryParams.value.type === 0 ? 'liveRoom' : 'pkLiveRoom'}?roomId=${id}`)
+  router.push(`/${queryParams.value.type === 1 ? 'pkLiveRoom' : 'liveRoom'}?roomId=${id}`)
 }
 
 onMounted(() => {
