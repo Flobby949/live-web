@@ -40,6 +40,7 @@ const isLoading = ref(false)
 // 查询直播间列表
 const queryPage = async () => {
   isLoading.value = true
+  console.log('查询直播间列表', queryParams.value)
   const res = await livingListByPage(queryParams.value)
   if (res.success) {
     console.log('获取直播间列表成功')
@@ -55,15 +56,21 @@ const queryPage = async () => {
 // 跳转到直播间
 const goToLivingRoom = (id: number) => {
   console.log('跳转到直播间', id)
-  router.push(`/liveRoom?roomId=${id}`)
+  router.push(`/${queryParams.value.type === 0 ? 'liveRoom' : 'pkLiveRoom'}?roomId=${id}`)
 }
 
-// 滚动监听
 onMounted(() => {
+  // 获取路由参数
+  const query = router.currentRoute.value.query
+  console.log('路由参数', query)
+  if (query.type) {
+    queryParams.value.type = Number(query.type)
+  }
   queryPage()
   window.addEventListener('scroll', handleScroll)
 })
 
+// 滚动监听
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })

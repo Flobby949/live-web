@@ -4,7 +4,7 @@
     <navbar />
     <!-- 内容区 -->
     <div class="main-content">
-      <router-view />
+      <router-view :key="router.currentRoute.value.fullPath" />
     </div>
     <!-- 底部的 footer -->
     <!-- <my-footer /> -->
@@ -12,6 +12,7 @@
 </template>
 
 <script setup lang="ts">
+import router from '@/router'
 import navbar from '@/layout/navbar/index.vue'
 // import myFooter from '@/layout/footer/index.vue'
 </script>

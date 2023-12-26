@@ -17,6 +17,7 @@ export interface GiftSendDTO {
   roomId: number
   senderUserId: number
   receiverId: number
+  type: number
 }
 
 export const listGift = (): Promise<ResponseData<GiftConfigVO[]>> => {

@@ -75,6 +75,11 @@ const props = defineProps({
     type: Boolean,
     required: true,
     default: false
+  },
+  // 重置余额的方法
+  resetBalance: {
+    type: Function as PropType<() => void>,
+    required: true
   }
 })
 
@@ -90,6 +95,7 @@ const payProduct = async (productId: number) => {
   } else {
     toast.error(res.message)
   }
+  props.resetBalance()
   rechargeCardVisible.value = false
 }
 

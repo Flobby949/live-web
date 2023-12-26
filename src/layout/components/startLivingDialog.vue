@@ -59,7 +59,7 @@ const goLive = async (type: number) => {
       timeout: 2000
     })
     liveDialogVisible.value = false
-    router.push('/liveRoom?roomId=' + res.data)
+    router.push(`/${type === 0 ? 'liveRoom' : 'pkLiveRoom'}?roomId=${res.data}`)
   } else {
     toast.error(res.message, {
       timeout: 2000

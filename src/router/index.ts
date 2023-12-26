@@ -33,6 +33,14 @@ const routes = [
           loginRequire: true
         },
         component: () => import('@/views/liveRoom.vue')
+      },
+      {
+        path: '/pkLiveRoom',
+        name: 'pkLiveRoom',
+        meta: {
+          loginRequire: true
+        },
+        component: () => import('@/views/pkLiveRoom.vue')
       }
     ]
   }

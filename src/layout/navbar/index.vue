@@ -78,7 +78,7 @@ const navRouter = [
   },
   {
     title: '主播PK',
-    path: '/about',
+    path: '/home?type=1',
     icon: 'mdi-account'
   },
   {

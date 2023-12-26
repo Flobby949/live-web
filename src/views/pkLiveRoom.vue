@@ -17,11 +17,37 @@
               v-if="user.userId === livingRoomInfo?.anchorId"
               >关闭直播</v-btn
             >
+            <v-btn style="background-color: #966bff; color: #fff" @click="connectLiving" v-else>连线</v-btn>
           </div>
-          <video width="100%" style="background-color: rgb(18, 9, 37); flex: 1">
-            <!-- <source src="test.mp4"> -->
-          </video>
+          <!-- <video width="100%" style="background-color: rgb(18, 9, 37); flex: 1"> -->
+          <!-- <source src="test.mp4"> -->
+          <!-- </video> -->
           <canvas class="svga-wrap" ref="canvas"></canvas>
+          <div style="display: inline-block; text-align: center; background-color: #000; width: 100%; flex: 1">
+            <div style="height: 75%; display: flex">
+              <div @click="choosePkUserAnchor" style="flex: 1">
+                <video
+                  id="anchorVideo"
+                  style="display: inline-block; border: rgba(255, 165, 0, 0) 3px solid; height: 100%; width: 100%"
+                />
+              </div>
+              <div @click="choosePkObjectAnchor" style="flex: 1">
+                <video
+                  id="subAnchorVideo"
+                  style="display: inline-block; border: rgba(255, 165, 0, 0) 3px solid; height: 100%; width: 100%"
+                />
+              </div>
+            </div>
+            <div class="pk-bar">
+              <div class="pk-detail-con">
+                <div class="progress">
+                  <div class="progress-bar" id="pkBar" style="width: 50%">
+                    <i class="lightning"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="gift_content">
             <div class="gift_content_title">礼物面板</div>
             <div class="bank_tab" @click="showBankInfoTab()">
@@ -99,13 +125,13 @@
     v-model="rechargeCardVisible"
     :current-balance="currentBalance"
     :pay-products="payProducts"
-    :resetBalance="refreshBalance"
+    :reset-balance="refreshBalance"
   />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { closeLiving, livingInfo, LivingRoomInitVO } from '@/api/living'
+import { closeLiving, livingInfo, LivingRoomInitVO, userConnectLiving } from '@/api/living'
 import { getImConfig, ImConfigVO } from '@/api/im'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
@@ -194,7 +220,7 @@ const connectImServer = async () => {
 }
 
 const webSocketOnOpen = () => {
-  console.log('WebSocket连接成功')
+  console.log('WebSocket连接成功 - PK')
 }
 const webSocketOnClose = () => {
   console.log('WebSocket连接关闭')
@@ -227,6 +253,17 @@ const webSocketOnMessage = (event: MessageEvent) => {
     } else if (respData.bizCode === 5557) {
       console.log('送礼失败')
       toast.error(respMsg.msg)
+    } else if (respData.bizCode == 5558) {
+      toast.success('pk礼物送礼成功')
+      playGiftSvga(respMsg.url)
+      changePkBar(respMsg.pkNum)
+      console.log(respMsg.winnerId)
+      if (respMsg.winnerId) {
+        toast.success('pk结束')
+      }
+    } else if (respData.bizCode == 5559) {
+      pkObjId.value = respMsg.pkObjId
+      toast.success('pk用户已上线')
     }
     sendAckCode(respData)
   }
@@ -331,15 +368,19 @@ const sendGift = async (gift: GiftConfigVO) => {
     roomId: roomId.value,
     giftId: gift.giftId,
     senderUserId: user.value.userId,
-    receiverId: livingRoomInfo.value?.anchorId,
-    type: 0
+    receiverId: lastChooseAnchorId.value,
+    type: 1
   } as GiftSendDTO
 
   const result = await send(params)
   if (!result.success) {
     toast.error(result.message)
   }
-  refreshBalance()
+}
+
+const changePkBar = (pkNum: number) => {
+  const pkBar = document.getElementById('pkBar')
+  pkBar!.style.width = `${pkNum}%`
 }
 
 // 充值相关
@@ -361,6 +402,34 @@ const getPayProducts = async () => {
 // 刷新余额
 const refreshBalance = () => {
   getPayProducts()
+}
+
+//给指定主播送礼
+const pkObjId = ref(0)
+const choosePkUserAnchor = () => {
+  chooseAnchor('anchorVideo', livingRoomInfo.value!.anchorId)
+}
+
+const choosePkObjectAnchor = () => {
+  chooseAnchor('subAnchorVideo', pkObjId.value)
+}
+const lastChooseAnchorTab = ref()
+const lastChooseAnchorId = ref()
+const chooseAnchor = (id: string, anchorId: number) => {
+  console.log('选中主播id' + anchorId)
+  lastChooseAnchorId.value = anchorId
+  const lastChooseAnchor = document.getElementById(lastChooseAnchorTab.value)
+  if (lastChooseAnchor != undefined) {
+    lastChooseAnchor.style.border = 'rgba(255,165,0,0) 3px solid'
+  }
+  const currentChooseAnchor = document.getElementById(id)
+  currentChooseAnchor.style.border = 'rgba(255,165,0,1) 3px solid'
+  lastChooseAnchorTab.value = id
+}
+const connectLiving = async () => {
+  console.log('连线')
+  const res = await userConnectLiving(livingRoomInfo.value!.roomId)
+  console.log(res)
 }
 </script>
 
@@ -496,7 +565,6 @@ const refreshBalance = () => {
 }
 
 .svga-wrap {
-  border: solid;
   position: absolute;
   z-index: 10;
   left: 50%;
@@ -513,5 +581,41 @@ const refreshBalance = () => {
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: center;
+}
+
+.pk-bar {
+  width: 100%;
+  height: 60px;
+}
+
+.pk-detail-con {
+  width: 90%;
+  position: relative;
+  left: 5%;
+  top: 10%;
+}
+
+.progress {
+  width: 100%;
+  height: 38px;
+  overflow: hidden;
+  background-color: #db1d4e;
+  border-radius: 19px;
+}
+
+.progress-bar {
+  height: 38px;
+  text-align: left;
+  background-color: #4c3de0;
+  -moz-transition: width 0.6s ease;
+  -webkit-transition: width 0.6s ease;
+  transition: width 0.6s ease;
+}
+
+.progress,
+.progress-bar {
+  background-image: -moz-linear-gradient(rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 50%);
+  background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 50%);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 50%);
 }
 </style>
