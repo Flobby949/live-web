@@ -12,8 +12,8 @@ export interface LivingRoomInitVO {
   userId: number
   avatar: string
   nickName: string
-  watcherAvatar: string
   defaultBgImg: string
+  redPacketConfigCode: string
 }
 
 export interface LivingRoomInfoVO {
@@ -62,4 +62,31 @@ export const livingListByPage = (req: liveListPageDTO): Promise<ResponseData<Pag
 
 export const userConnectLiving = (roomId: number): Promise<ResponseData<any>> => {
   return request.post<ResponseData<any>>(LIVING + `/online-pk`, { roomId: roomId }).then((response) => response.data)
+}
+
+export const prepareRedPacket = (roomId: number): Promise<ResponseData<any>> => {
+  return request
+    .post<ResponseData<any>>(LIVING + `/prepare-redPacket?roomId=${roomId}`)
+    .then((response) => response.data)
+}
+
+export interface StartRedPacketDTO {
+  anchorId: number
+  userId: number
+  redPacketConfigCode: string
+}
+
+export const startRedPacket = (dto: StartRedPacketDTO): Promise<ResponseData<any>> => {
+  return request.post<ResponseData<any>>(LIVING + `/start-redPacket`, { ...dto }).then((response) => response.data)
+}
+
+export interface RedPacketReceiveVO {
+  price: number
+  status: number
+}
+
+export const getRedPacket = (code: string): Promise<ResponseData<RedPacketReceiveVO>> => {
+  return request
+    .post<ResponseData<RedPacketReceiveVO>>(LIVING + `/getRedPacket?code=${code}`)
+    .then((response) => response.data)
 }

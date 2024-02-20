@@ -23,31 +23,27 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import { useRedPacket } from '@/hooks/useRedPacket'
+import { onMounted } from 'vue'
+import { livingStore } from '@/store'
+import { storeToRefs } from 'pinia'
+
+const { showRedPacket } = storeToRefs(livingStore())
+const { totalMoney, getRedPacketData } = useRedPacket()
 
 interface Image {
   style: Record<string, string>
   money: number
 }
 
-const props = defineProps({
-  count: {
-    type: Number,
-    default: 40
-  }
-})
-
-const totalMoney = ref(0)
 const images = ref<Image[]>([])
-const modalVisible = ref(false)
-const modalText = ref('')
-const buttonText = ref('继续抢红包')
-const wrapper = ref()
-onMounted(() => {
-  createDom(props.count)
-})
 
+const wrapper = ref()
+
+let totalCount = 0
 function createDom(num: number) {
+  totalCount = num
   for (let i = 0; i < num; i++) {
     const left = Math.ceil(Math.random() * (window.innerWidth - 150)) + 'px'
     const delay = Math.ceil(Math.random() * 80) / 10
@@ -62,15 +58,42 @@ function createDom(num: number) {
   }
 }
 
-function handleMousedown(event: MouseEvent) {
+const modalVisible = ref(false)
+const modalText = ref('')
+const buttonText = ref('继续抢红包')
+const handleMousedown = async (event: MouseEvent) => {
   const target = event.target as HTMLImageElement
   const money = target.dataset.money
   if (money) {
-    modalText.value = `恭喜抢到红包${money}元`
+    const price = await getRedPacketData()
+    console.log(price)
+    if (price === 0) return
+    modalText.value = `恭喜抢到红包${price}旗鱼币`
     modalVisible.value = true
-    totalMoney.value += Number(money)
+    totalMoney.value += Number(price)
   }
 }
+
+let currentCount = 0
+function redPacketEnd() {
+  currentCount++
+  if (currentCount === totalCount) {
+    console.log('红包抢完了,总金额', totalMoney.value)
+    modalVisible.value = true
+    modalText.value = `红包抢完了,\n恭喜抢到红包${totalMoney.value}旗鱼币`
+    buttonText.value = '确定'
+    showRedPacket.value = false
+  }
+}
+
+onMounted(() => {
+  wrapper.value.addEventListener('webkitAnimationEnd', redPacketEnd)
+})
+
+// 暴露子组件方法
+defineExpose({
+  createDom
+})
 </script>
 
 <style scoped>
@@ -151,6 +174,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 30px;
 }
 
 #btn {
@@ -162,5 +186,10 @@ body {
   border: none;
   outline: none;
   cursor: pointer;
+}
+
+#text {
+  text-align: center;
+  line-height: 1.5;
 }
 </style>

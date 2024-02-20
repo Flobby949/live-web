@@ -17,6 +17,18 @@
               v-if="user.userId === livingRoomInfo?.anchorId"
               >关闭直播</v-btn
             >
+            <v-btn
+              style="background-color: #966bff; color: #fff"
+              @click="prepare(livingRoomInfo?.roomId)"
+              v-if="user.userId === livingRoomInfo?.anchorId"
+              >初始化红包雨</v-btn
+            >
+            <v-btn
+              style="background-color: #966bff; color: #fff"
+              @click="startSendRedPacket"
+              v-if="user.userId === livingRoomInfo?.anchorId && redPacketInit"
+              >派发红包雨</v-btn
+            >
           </div>
           <video width="100%" style="background-color: rgb(18, 9, 37); flex: 1">
             <!-- <source src="test.mp4"> -->
@@ -101,6 +113,8 @@
     :pay-products="payProducts"
     :resetBalance="refreshBalance"
   />
+
+  <div class="red-packet-container" v-show="showRedPacket"><red-packet-efficacy ref="efficacy" /></div>
 </template>
 
 <script setup lang="ts">
@@ -109,7 +123,7 @@ import { closeLiving, livingInfo, LivingRoomInitVO } from '@/api/living'
 import { getImConfig, ImConfigVO } from '@/api/im'
 import { useToast } from 'vue-toastification'
 import router from '@/router'
-import { userStore } from '@/store'
+import { userStore, livingStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { utf8ByteToUnicodeStr } from '@/utils/common'
 import giftCardItem from '@/components/giftCardItem.vue'
@@ -117,15 +131,22 @@ import SVGA from 'svga.lite'
 import { GiftConfigVO, GiftSendDTO, listGift, send } from '@/api/gift'
 import { PayProductItemVO, payProductList } from '@/api/bank'
 import rechargeCard from '@/components/rechargeCard.vue'
+import { useRedPacket } from '@/hooks/useRedPacket'
+import redPacketEfficacy from '@/components/redPacketEfficacy.vue'
+import { watch } from 'vue'
 const toast = useToast()
 const userInfo = userStore()
 const roomId = ref(-1)
 const { user } = storeToRefs(userInfo)
+const { redPacketConfigCode } = storeToRefs(livingStore())
 // 从路由获取直播间id
 const route = router.currentRoute.value
 const { query } = route
 
 const livingRoomInfo = ref<LivingRoomInitVO>()
+
+const { redPacketInit, prepare, start, showRedPacket, efficacy, redPacketShow } = useRedPacket()
+
 onMounted(() => {
   queryGiftList()
   roomId.value = Number(query.roomId)
@@ -137,6 +158,7 @@ onMounted(() => {
     if (res.success) {
       console.log('获取直播间信息成功')
       livingRoomInfo.value = res.data
+      redPacketConfigCode.value = livingRoomInfo.value.redPacketConfigCode
       connectImServer()
     } else {
       console.log('获取直播间信息失败')
@@ -146,6 +168,13 @@ onMounted(() => {
   })
   initSvga()
   getPayProducts()
+})
+
+// 使用watch监听showRedPacket值变化
+watch(showRedPacket, (newVal) => {
+  if (newVal) {
+    console.log('showRedPacket', newVal)
+  }
 })
 
 onBeforeUnmount(() => {
@@ -234,6 +263,10 @@ const webSocketOnMessage = (event: MessageEvent) => {
     } else if (respData.bizCode === 5557) {
       console.log('送礼失败')
       toast.error(respMsg.msg)
+    } else if (respData.bizCode === 5560) {
+      console.log('开始红包雨')
+      toast.success('开始红包雨')
+      redPacketShow(respData.data)
     }
     sendAckCode(respData)
   }
@@ -377,6 +410,11 @@ const getPayProducts = async () => {
 // 刷新余额
 const refreshBalance = () => {
   getPayProducts()
+}
+
+// 红包雨
+const startSendRedPacket = async () => {
+  start(livingRoomInfo.value!.anchorId, user.value.userId, livingRoomInfo.value!.redPacketConfigCode)
 }
 </script>
 
@@ -528,5 +566,14 @@ const refreshBalance = () => {
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: center;
+}
+
+.red-packet-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 </style>
