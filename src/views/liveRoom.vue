@@ -3,6 +3,16 @@
     <v-row no-gutters>
       <v-col cols="12" md="9">
         <div class="full-container">
+          <div class="shop-bar">
+            <div>秒殺商品</div>
+            <div @click="showShopCar">購物車</div>
+            <div v-for="(item, index) in skuList" :key="index">
+              <div class="sku-item" @click="showSkuInfo(item.skuId)">
+                <img :src="item.iconUrl" width="100" alt="" />
+                <div>{{ item.name }}</div>
+              </div>
+            </div>
+          </div>
           <div class="liveroom_top">
             <div style="position: relative; top: -20px">
               <div class="anchor_name">
@@ -107,6 +117,71 @@
     </v-card>
   </v-dialog>
 
+  <v-dialog v-model="showSkuInfoFlag" max-width="500px">
+    <div style="background-color: #fff; padding: 10px">
+      <v-btn icon @click="showSkuInfoFlag = false">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+      <div style="text-align: center">
+        <img :src="skuInfoDetail?.iconUrl" class="shop_detail_img" width="200" />
+      </div>
+      <div style="text-align: center">
+        <div style="color: orange">
+          <b>{{ skuInfoDetail?.name }}</b>
+        </div>
+        <div style="color: grey">{{ skuInfoDetail?.remark }}</div>
+        <div>
+          <span style="color: red"
+            ><b>{{ skuInfoDetail?.skuPrice }}元</b></span
+          >
+        </div>
+        <div style="margin-top: 20px">
+          <v-btn color="warning" text @click="addShopCar(skuInfoDetail!.skuId)">加入购物车</v-btn>
+        </div>
+      </div>
+    </div>
+  </v-dialog>
+
+  <v-dialog v-model="showCartFlag" max-width="500px">
+    <div class="cart_tab" id="car_detail" v-show="cartInfoList">
+      <div
+        class="car_item"
+        style="display: flex; border-bottom: #666"
+        v-for="(item, index) in cartInfoList"
+        :key="index"
+      >
+        <img :src="item.skuInfoDTO.iconUrl" class="car_item_img" width="50" />
+        <div style="display: flex; flex-direction: column; margin: 0 20px">
+          <span class="car_item_desc">{{ item.skuInfoDTO.name }}</span> <span>数量：{{ item.count }}</span>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 20px">
+        <v-btn color="success" @click="confirmOrder">下单支付</v-btn>
+      </div>
+    </div>
+    <div class="cart_tab" v-show="!cartInfoList">购物车暂无商品</div>
+  </v-dialog>
+
+  <v-dialog v-model="showPayLFlag" max-width="500px" persistent>
+    <v-card>
+      <v-toolbar dark prominent>
+        <v-toolbar-title>订单支付</v-toolbar-title>
+
+        <v-spacer></v-spacer>
+
+        <v-btn icon @click="showPayLFlag = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+      <v-card-text> 需付款 {{ totalPrice }} 元，确定使用余额支付吗？ </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="error" text @click="showPayLFlag = false">取消</v-btn>
+        <v-btn color="primary" text @click="doPay">确认</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <recharge-card
     v-model="rechargeCardVisible"
     :current-balance="currentBalance"
@@ -130,6 +205,16 @@ import giftCardItem from '@/components/giftCardItem.vue'
 import SVGA from 'svga.lite'
 import { GiftConfigVO, GiftSendDTO, listGift, send } from '@/api/gift'
 import { PayProductItemVO, payProductList } from '@/api/bank'
+import {
+  listSkuInfo,
+  SkuInfoVO,
+  skuDetail,
+  addCart,
+  getCarInfo,
+  ShopCarItemRespVO,
+  prepareOrder,
+  payNow
+} from '@/api/shop'
 import rechargeCard from '@/components/rechargeCard.vue'
 import { useRedPacket } from '@/hooks/useRedPacket'
 import redPacketEfficacy from '@/components/redPacketEfficacy.vue'
@@ -159,6 +244,7 @@ onMounted(() => {
       console.log('获取直播间信息成功')
       livingRoomInfo.value = res.data
       redPacketConfigCode.value = livingRoomInfo.value.redPacketConfigCode
+      getSkuList()
       connectImServer()
     } else {
       console.log('获取直播间信息失败')
@@ -416,6 +502,95 @@ const refreshBalance = () => {
 const startSendRedPacket = async () => {
   start(livingRoomInfo.value!.anchorId, user.value.userId, livingRoomInfo.value!.redPacketConfigCode)
 }
+
+// 带货
+// 获取商品列表
+const skuList = ref<SkuInfoVO[]>()
+const getSkuList = async () => {
+  const res = await listSkuInfo(livingRoomInfo.value!.roomId)
+  if (res.success) {
+    skuList.value = res.data
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
+}
+const skuInfoDetail = ref<SkuInfoVO>()
+const showSkuInfoFlag = ref(false)
+const showSkuInfo = async (skuId: number) => {
+  const res = await skuDetail(skuId)
+  if (res.success) {
+    skuInfoDetail.value = res.data
+    showSkuInfoFlag.value = true
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
+}
+const addShopCar = async (skuId: number) => {
+  const res = await addCart(skuId, livingRoomInfo.value!.roomId)
+  if (res.success) {
+    if (res.data) {
+      toast.success('成功加入购物车', {
+        timeout: 2000
+      })
+      showSkuInfoFlag.value = false
+    } else {
+      toast.error('加入购物车失败', {
+        timeout: 2000
+      })
+    }
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
+}
+const showCartFlag = ref(false)
+const cartInfoList = ref<ShopCarItemRespVO[]>()
+const showShopCar = async () => {
+  const res = await getCarInfo(livingRoomInfo.value!.roomId)
+  if (res.success) {
+    cartInfoList.value = res.data.shopCarItemRespVOS
+    showCartFlag.value = true
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
+}
+const showPayLFlag = ref(false)
+const totalPrice = ref<number>()
+const orderId = ref<number>()
+const confirmOrder = async () => {
+  const res = await prepareOrder(livingRoomInfo.value!.roomId)
+  if (res.success) {
+    totalPrice.value = res.data.totalPrice
+    orderId.value = res.data.orderId
+    showCartFlag.value = false
+    showPayLFlag.value = true
+    cartInfoList.value = []
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
+}
+const doPay = async () => {
+  const res = await payNow(orderId.value)
+  if (res.success) {
+    showPayLFlag.value = false
+    toast.success('支付成功', {
+      timeout: 2000
+    })
+  } else {
+    toast.error(res.message, {
+      timeout: 2000
+    })
+  }
+}
 </script>
 
 <style scoped>
@@ -575,5 +750,26 @@ const startSendRedPacket = async () => {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+}
+
+.shop-bar {
+  position: fixed;
+  left: 40px;
+  top: 150px;
+  text-align: center;
+  padding: 10px;
+}
+
+.sku-item {
+  border: solid;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 5px;
+}
+
+.cart_tab {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 20px;
 }
 </style>
